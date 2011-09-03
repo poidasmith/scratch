@@ -23,4 +23,8 @@ public class JSONArray extends JSONValue
     public String toString() {
         return Arrays.toString(values);
     }
+
+    public boolean equals(Object obj) {
+        return obj instanceof JSONArray && Arrays.deepEquals(values, ((JSONArray) obj).values);
+    }
 }

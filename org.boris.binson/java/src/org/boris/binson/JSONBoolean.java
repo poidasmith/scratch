@@ -22,4 +22,8 @@ public final class JSONBoolean extends JSONValue
     public String toString() {
         return String.valueOf(booleanValue());
     }
+
+    public int hashCode() {
+        return type;
+    }
 }

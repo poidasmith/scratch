@@ -21,4 +21,12 @@ public class JSONInteger extends JSONValue
     public String toString() {
         return String.valueOf(value);
     }
+
+    public int hashCode() {
+        return value;
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof JSONInteger && value == ((JSONInteger) obj).value;
+    }
 }

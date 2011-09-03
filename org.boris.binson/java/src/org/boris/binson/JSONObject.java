@@ -23,4 +23,12 @@ public final class JSONObject extends JSONValue
     public String toString() {
         return String.valueOf(values);
     }
+
+    public int hashCode() {
+        return values == null ? type : values.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof JSONObject && equals(values, ((JSONObject) obj).values);
+    }
 }

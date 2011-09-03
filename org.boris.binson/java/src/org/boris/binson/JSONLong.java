@@ -19,6 +19,14 @@ public class JSONLong extends JSONValue
     }
 
     public String toString() {
-        return String.valueOf(value);
+        return Long.toHexString(value);
+    }
+
+    public int hashCode() {
+        return (int) (value ^ (value >> 32));
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof JSONLong && value == ((JSONLong) obj).value;
     }
 }

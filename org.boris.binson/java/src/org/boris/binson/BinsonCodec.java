@@ -57,14 +57,14 @@ public class BinsonCodec
         case TYPE_INT64:
             long l = d ? Double.doubleToLongBits(((JSONDouble) val).value) : ((JSONLong) val).value;
             os.write(d ? TYPE_DOUBLE : TYPE_INT64);
-            os.write((int) (l & 0xf));
-            os.write((int) (l >> 8 & 0xf));
-            os.write((int) (l >> 16 & 0xf));
-            os.write((int) (l >> 24 & 0xf));
-            os.write((int) (l >> 32 & 0xf));
-            os.write((int) (l >> 40 & 0xf));
-            os.write((int) (l >> 48 & 0xf));
-            os.write((int) (l >> 56 & 0xf));
+            os.write((int) (l & 0xff));
+            os.write((int) (l >> 8 & 0xff));
+            os.write((int) (l >> 16 & 0xff));
+            os.write((int) (l >> 24 & 0xff));
+            os.write((int) (l >> 32 & 0xff));
+            os.write((int) (l >> 40 & 0xff));
+            os.write((int) (l >> 48 & 0xff));
+            os.write((int) (l >> 56 & 0xff));
             return;
         case TYPE_OBJECT:
             valo = ((JSONObject) val).values;
@@ -164,14 +164,14 @@ public class BinsonCodec
             d = true;
         case TYPE_INT64:
             readAll(is, buf, 8);
-            long l = ((long) buf[7] << 56 |
-                    ((long) buf[6] & 0xff) << 48 |
-                    ((long) buf[5] & 0xff) << 40 |
-                    ((long) buf[4] & 0xff) << 32 |
-                    ((long) buf[3] & 0xff) << 24 |
-                    ((long) buf[2] & 0xff) << 16 |
-                    ((long) buf[1] & 0xff) << 8 |
-                    ((long) buf[0] & 0xff));
+            long l = ((((long) buf[7]) << 56) |
+                    ((((long) buf[6]) & 0xff) << 48) |
+                    ((((long) buf[5]) & 0xff) << 40) |
+                    ((((long) buf[4]) & 0xff) << 32) |
+                    ((((long) buf[3]) & 0xff) << 24) |
+                    ((((long) buf[2]) & 0xff) << 16) |
+                    ((((long) buf[1]) & 0xff) << 8) |
+                    (((long) buf[0]) & 0xff));
             return jvals ? (d ? new JSONDouble(Double.longBitsToDouble(l)) : new JSONLong(l)) : (d ? Double
                     .longBitsToDouble(l) : l);
         case TYPE_OBJECT:

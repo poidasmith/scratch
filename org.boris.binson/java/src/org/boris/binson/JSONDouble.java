@@ -21,4 +21,13 @@ public class JSONDouble extends JSONValue
     public String toString() {
         return String.valueOf(value);
     }
+
+    public int hashCode() {
+        long l = Double.doubleToLongBits(value);
+        return (int) (l ^ (l >> 32));
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof JSONDouble && value == ((JSONDouble) obj).value;
+    }
 }

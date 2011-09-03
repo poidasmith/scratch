@@ -21,4 +21,12 @@ public class JSONString extends JSONValue
     public String toString() {
         return value;
     }
+
+    public int hashCode() {
+        return value == null ? 0 : value.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof JSONString && equals(((JSONString) obj).value, value);
+    }
 }

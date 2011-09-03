@@ -23,4 +23,16 @@ public class JSONByteArray extends JSONValue
     public String toString() {
         return Arrays.toString(buffer);
     }
+
+    public int hashCode() {
+        return buffer == null ? type : Arrays.hashCode(buffer);
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof JSONByteArray == false)
+            return false;
+        if (buffer == null)
+            return ((JSONByteArray) obj).buffer == null;
+        return Arrays.equals(buffer, ((JSONByteArray) obj).buffer);
+    }
 }
