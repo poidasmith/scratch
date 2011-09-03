@@ -17,4 +17,8 @@ public class JSONLong extends JSONValue
         super(BinsonCodec.TYPE_INT64);
         this.value = value;
     }
+
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

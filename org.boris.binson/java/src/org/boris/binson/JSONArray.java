@@ -9,6 +9,8 @@
  *******************************************************************************/
 package org.boris.binson;
 
+import java.util.Arrays;
+
 public class JSONArray extends JSONValue
 {
     public final JSONValue[] values;
@@ -16,5 +18,9 @@ public class JSONArray extends JSONValue
     public JSONArray(JSONValue[] values) {
         super(BinsonCodec.TYPE_ARRAY);
         this.values = values;
+    }
+
+    public String toString() {
+        return Arrays.toString(values);
     }
 }

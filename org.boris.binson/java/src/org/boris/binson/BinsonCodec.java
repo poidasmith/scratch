@@ -205,7 +205,7 @@ public class BinsonCodec
                 Object[] arr = jvals ? new JSONValue[len] : new Object[len];
                 for (int i = 0; i < len; i++)
                     arr[i] = decode(is, buf, jvals);
-                return arr;
+                return jvals ? new JSONArray((JSONValue[]) arr) : arr;
             case TYPE_STRING:
                 byte[] b = buf.length >= len ? buf : new byte[len];
                 buf = b;

@@ -9,6 +9,8 @@
  *******************************************************************************/
 package org.boris.binson;
 
+import java.util.Arrays;
+
 public class JSONByteArray extends JSONValue
 {
     public final byte[] buffer;
@@ -16,5 +18,9 @@ public class JSONByteArray extends JSONValue
     JSONByteArray(byte[] buffer) {
         super(BinsonCodec.TYPE_RAW);
         this.buffer = buffer;
+    }
+
+    public String toString() {
+        return Arrays.toString(buffer);
     }
 }

@@ -19,4 +19,8 @@ public final class JSONObject extends JSONValue
         super(BinsonCodec.TYPE_OBJECT);
         this.values = values;
     }
+
+    public String toString() {
+        return String.valueOf(values);
+    }
 }

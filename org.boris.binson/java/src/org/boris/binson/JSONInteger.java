@@ -17,4 +17,8 @@ public class JSONInteger extends JSONValue
         super(BinsonCodec.TYPE_INT32);
         this.value = value;
     }
+
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

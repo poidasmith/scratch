@@ -11,7 +11,11 @@ package org.boris.binson;
 
 public abstract class JSONValue
 {
-    public static final JSONValue NULL = new JSONValue(BinsonCodec.TYPE_NULL) {};
+    public static final JSONValue NULL = new JSONValue(BinsonCodec.TYPE_NULL) {
+        public String toString() {
+            return "null";
+        }
+    };
     public static final JSONValue FALSE = new JSONBoolean(false);
     public static final JSONValue TRUE = new JSONBoolean(true);
 

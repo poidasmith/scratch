@@ -17,4 +17,8 @@ public class JSONDouble extends JSONValue
         super(BinsonCodec.TYPE_DOUBLE);
         this.value = value;
     }
+
+    public String toString() {
+        return String.valueOf(value);
+    }
 }
