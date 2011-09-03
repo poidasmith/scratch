@@ -14,6 +14,8 @@ Binson encodes using a tag, len, value structure.
 
 Currently Binson is smaller than JSON encoding for all practical encoding cases and significantly faster to encode/decode.
 
+A reference implementation can be found under the org.boris.binson folder in this repository.
+
 ## Types
 
 - object: tag, length (number of pairs), length pairs (string, value)
