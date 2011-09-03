@@ -72,14 +72,14 @@ For compatibility with existing languages (see priorities 2 & 3) the correspondi
 
     { "hello" : "world" }
 
-    0x01 (object type with 1 byte length field) 
-    0x01 (1 pair of string/value )
-    0x43 (string 
-    0x05 
-    0x68 0x65 0x6c 0x6c 0x6f
-    0x43 
-    0x05 
-    0x77 0x6f 0x72 0x6c 0x64 
+    0x01                            : object type with 1 byte length field 
+    0x01                            : 1 pair of string/value 
+    0x03                            : string with 1 byte length field 
+    0x05                            : 5 bytes for UTF-8 encoding of "hello"
+    0x68 0x65 0x6c 0x6c 0x6f        : the UTF-8 encoding of "hello"
+    0x43                            : string with 1 byte length field
+    0x05                            : 5 bytes for UTF-8 encoding of "world"
+    0x77 0x6f 0x72 0x6c 0x64        : the UTF-8 encoding of "world"
      
 
 ## Interoperability with JSON
