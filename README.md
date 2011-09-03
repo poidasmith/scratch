@@ -47,15 +47,15 @@ Bits 7 and 8 must be zero for fixed length structures (null, int64, double, fals
 			  MSN      LSN 	
 			+--------------------------------------------------+
 	null	| 0 0 0 0  0 0 0 0 | N/A               | N/A       |
-	object	| x x 0 0  0 0 0 1 | len (num pairs)   | len pairs |
-	array	| x x 0 0  0 0 1 0 | len (num elems)   | len elems |
-	string	| x x 0 0  0 0 1 1 | len (num bytes)   | len bytes |
-	int32	| x x 0 0  0 1 0 0 | value (len bytes) | N/A       |
-	int64	| 0 0 0 0  0 1 0 1 | value (8 bytes)   | N/A       |
-	double	| 0 0 0 0  0 1 1 0 | value (8 bytes)   | N/A       |
-	raw		| x x 0 0  0 1 1 1 | len (num bytes)   | len bytes |
-	false	| 0 0 0 0  1 0 0 0 | N/A               | N/A       |
-	true	| 0 0 0 0  1 0 0 1 | N/A               | N/A       |
+	true	| 0 0 0 0  0 0 0 1 | N/A               | N/A       |
+	false	| 0 0 0 0  0 0 1 0 | N/A               | N/A       |
+	int64	| 0 0 0 0  0 0 1 1 | value (8 bytes)   | N/A       |
+	double	| 0 0 0 0  0 1 0 0 | value (8 bytes)   | N/A       |
+	object	| x x 0 0  1 0 0 0 | len (num pairs)   | len pairs |
+	array	| x x 0 0  1 0 0 1 | len (num elems)   | len elems |
+	string	| x x 0 0  1 0 1 0 | len (num bytes)   | len bytes |
+	int32	| x x 0 0  1 0 1 1 | value (len bytes) | N/A       |
+	raw		| x x 0 0  1 1 0 0 | len (num bytes)   | len bytes |
 			+--------------------------------------------------+
 	
 For variable length fields bits 7 and 8 encode 4 possible length values:
@@ -65,7 +65,7 @@ For variable length fields bits 7 and 8 encode 4 possible length values:
     1 0 = 3 bytes
     1 1 = 4 bytes
     
-In hex this is 0x0, 0x4, 0x7, 0x8
+In hex this is 0x0, 0x4, 0xc, 0xd
 
 For compatibility with existing languages (see priorities 2 & 3) the corresponding length field is a signed 32 bit integer.
 
@@ -75,12 +75,12 @@ Where applicable, endianness is little. This is includes variable length structu
 
     { "hello" : "world" }
 
-    0x01                            : object type with 1 byte length field 
+    0x08                            : object type with 1 byte length field 
     0x01                            : 1 pair of string/value 
-    0x03                            : string with 1 byte length field 
+    0x0a                            : string with 1 byte length field 
     0x05                            : 5 bytes for UTF-8 encoding of "hello"
     0x68 0x65 0x6c 0x6c 0x6f        : the UTF-8 encoding of "hello"
-    0x43                            : string with 1 byte length field
+    0x0a                            : string with 1 byte length field
     0x05                            : 5 bytes for UTF-8 encoding of "world"
     0x77 0x6f 0x72 0x6c 0x64        : the UTF-8 encoding of "world"
      
