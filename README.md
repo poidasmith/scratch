@@ -12,6 +12,8 @@ The priorities for Binson encoding are (in rough order of priority):
 
 Binson encodes using a tag, len, value structure. 
 
+Currently Binson is smaller than JSON encoding for all practical encoding cases and significantly faster to encode/decode.
+
 ## Types
 
 - object: tag, length (number of pairs), length pairs (string, value)
