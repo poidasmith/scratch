@@ -91,7 +91,7 @@ Where applicable, endianness is little. This is includes variable length structu
 
 ## Interoperability with JSON
 
-Binson aims to be compatible with JSON where possible/practical. This achieved except for the inclusion 
+Binson aims to be compatible with JSON where possible/practical. This is achieved except for the inclusion 
 of a RAW byte array type, which is a natural inclusion on a binary spec.
 
 
