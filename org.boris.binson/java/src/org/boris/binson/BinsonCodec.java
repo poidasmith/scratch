@@ -87,21 +87,31 @@ public class BinsonCodec
         }
 
         // Calculate the length of our length field (or int32)
-        int lenlen = (len & 0xf000) != 0 ? 4 : (len & 0xf00) != 0 ? 3 : (len & 0xf0) != 0 ? 2 : 1;
+        int lenlen = (len & 0xff000000) != 0 ? 4 : (len & 0x00ff0000) != 0 ? 3 : (len & 0x0000ff00) != 0 ? 2 : 1;
 
         // Write out the type combined with the length length
-        os.write(lenlen - 1 << 6 | val.type);
+        os.write((lenlen - 1) << 6 | val.type);
 
         // Write out the length (or int32);
         switch (lenlen) {
         case 1:
             os.write(len);
+            break;
         case 2:
+            os.write(len);
             os.write(len >> 8);
+            break;
         case 3:
+            os.write(len);
+            os.write(len >> 8);
             os.write(len >> 16);
+            break;
         case 4:
+            os.write(len);
+            os.write(len >> 8);
+            os.write(len >> 16);
             os.write(len >> 24);
+            break;
         }
 
         if (len > 0) {
@@ -136,10 +146,10 @@ public class BinsonCodec
     private static Object decode(InputStream is, byte[] buf, boolean jvals) throws IOException {
         int t = is.read();
         // Check that bits 5 and 6 are zero
-        if ((t & 0x60) != 0)
+        if ((t & 0x30) != 0)
             throw new IOException("Invalid tag: bit 5/6 non-zero");
         // Check that bits 7 and 8 are zero for fixed length types
-        if ((t & 0xf8) != 0)
+        if ((t & 0xf8) == 0 && (t & 0xc0) != 0)
             throw new IOException("Invalid tag: non-zero high nibble for fixed length structure");
 
         boolean d = false;
@@ -162,7 +172,8 @@ public class BinsonCodec
                     ((long) buf[2] & 0xff) << 16 |
                     ((long) buf[1] & 0xff) << 8 |
                     ((long) buf[0] & 0xff));
-            return d ? Double.longBitsToDouble(l) : l;
+            return jvals ? (d ? new JSONDouble(Double.longBitsToDouble(l)) : new JSONLong(l)) : (d ? Double
+                    .longBitsToDouble(l) : l);
         case TYPE_OBJECT:
         case TYPE_ARRAY:
         case TYPE_STRING:
@@ -170,14 +181,17 @@ public class BinsonCodec
             int lenlen = (t & 0xc0);
             int len = 0;
             switch (lenlen) {
-            case 0xd:
-                len <<= 8 | is.read();
-            case 0xc:
-                len <<= 8 | is.read();
-            case 0x4:
-                len <<= 8 | is.read();
-            case 0x0:
-                len <<= 8 | is.read();
+            case 0xc0:
+                len = is.read() | is.read() << 8 | is.read() << 16 | is.read() << 24;
+                break;
+            case 0x80:
+                len = is.read() | is.read() << 8 | is.read() << 16;
+                break;
+            case 0x40:
+                len = is.read() | is.read() << 8;
+                break;
+            case 0x00:
+                len = is.read();
                 break;
             }
             switch (t & 0xf) {
@@ -195,8 +209,8 @@ public class BinsonCodec
             case TYPE_STRING:
                 byte[] b = buf.length >= len ? buf : new byte[len];
                 buf = b;
-                readAll(is, b, b.length);
-                String s = new String(b, UTF8);
+                readAll(is, b, len);
+                String s = new String(b, 0, len, UTF8);
                 return jvals ? new JSONString(s) : s;
             case TYPE_INT32:
                 return jvals ? new JSONInteger(len) : len;
