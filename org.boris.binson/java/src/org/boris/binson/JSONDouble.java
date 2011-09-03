@@ -9,15 +9,12 @@
  *******************************************************************************/
 package org.boris.binson;
 
-public abstract class JSONValue
+public class JSONDouble extends JSONValue
 {
-    public static final JSONValue NULL = new JSONValue(BinsonCodec.TYPE_NULL) {};
-    public static final JSONValue FALSE = new JSONBoolean(false);
-    public static final JSONValue TRUE = new JSONBoolean(true);
+    public final double value;
 
-    public final int type;
-
-    JSONValue(int type) {
-        this.type = type;
+    public JSONDouble(double value) {
+        super(BinsonCodec.TYPE_DOUBLE);
+        this.value = value;
     }
 }

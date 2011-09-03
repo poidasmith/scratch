@@ -9,26 +9,42 @@
  *******************************************************************************/
 package org.boris.binson;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+
 public class HexDump
 {
     private static final int WIDTH = 20;
 
-    public static void dump(byte[] data, int offset, int length) {
+    public static void dump(PrintStream out, byte[] data, int offset, int length) {
         int numRows = length / WIDTH;
         for (int i = 0; i < numRows; i++) {
-            dumpRow(data, offset + i * WIDTH, WIDTH);
+            dumpRow(out, data, offset + i * WIDTH, WIDTH);
         }
         int leftover = length % WIDTH;
         if (leftover > 0) {
-            dumpRow(data, offset + data.length - leftover, leftover);
+            dumpRow(out, data, offset + data.length - leftover, leftover);
         }
     }
 
     public static void dump(byte[] data) {
-        dump(data, 0, data.length);
+        dump(System.out, data, 0, data.length);
     }
 
-    private static void dumpRow(byte[] data, int start, int length) {
+    public static void dump(PrintStream out, byte[] data) {
+        dump(out, data, 0, data.length);
+    }
+
+    public static String toHexDumpString(byte[] data) throws UnsupportedEncodingException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos, false, "UTF-8");
+        dump(ps, data);
+        ps.flush();
+        return new String(bos.toByteArray(), "UTF-8");
+    }
+
+    private static void dumpRow(PrintStream out, byte[] data, int start, int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
             String s = Integer.toHexString(data[start + i] & 0x00ff);
@@ -51,6 +67,6 @@ public class HexDump
                 sb.append(".");
             }
         }
-        System.out.println(sb.toString());
+        out.println(sb.toString());
     }
 }
