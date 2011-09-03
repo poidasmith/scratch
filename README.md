@@ -69,7 +69,7 @@ For variable length fields bits 7 and 8 encode 4 possible length values:
     1 0 = 3 bytes
     1 1 = 4 bytes
     
-In hex this is 0x0, 0x4, 0xc, 0xd
+In hex the high nibble should be is 0x0, 0x4, 0x8, 0xc
 
 For compatibility with existing languages (see priorities 2 & 3) the corresponding length field is a signed 32 bit integer.
 
