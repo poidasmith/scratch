@@ -14,21 +14,22 @@ Binson encodes using a tag, len, value structure.
 
 ## Types
 
-- object { key,value }*, 0x01, len (number of pairs), key,value,key,value...
-  (unordered keys)
-- array, 0x01, len, val1,val2
+- object: tag, length (number of pairs), length pairs (string, value)
+- array, tag, length (number of values), length values 
 - values
-	- object (0x01)
-	- array (0x02)
-	- string 0x03, len, unicode (utf8 encoded)
+	- object
+	- array 
+	- string: tag, length, UTF-8 encoded string
 	- number 
-		- 0x04, variable length signed int32
-		- 0x05, int64 (signed, 8 bytes)
-		- 0x06, double (IEEE 754-1985 double precision - 8 bytes)
-	- raw (0x07) byte array, len (number of bytes)
-	- false (0x08)
-	- true (0x09)
-	- null (0x0a)
+		- variable length signed int32
+		- int64 (signed, 8 bytes)
+		- double (IEEE 754-1985 double precision - 8 bytes)
+	- raw byte array: tag, length, bytes
+	- false 
+	- true
+	- null
+
+As per JSON spec, object pairs are explicitly unordered.
 
 ## Encoding
 
@@ -36,8 +37,12 @@ The tag is 1 byte in length. It contains the type of the field as well
 as the number of bytes used to represent the length of the field 
 (for variable length length fields) 
 
-The size of the length field is encode in the two most significant bits of the 
+The size of the length field is encoded in the two most significant bits of the 
 tag byte.
+
+Bits 5 and 6 must always be zero.
+
+Bits 7 and 8 must be zero for fixed length structures (null, int64, double, false, true) 
 	
 			  MSN      LSN 	
 			+--------------------------------------------------+
@@ -53,12 +58,6 @@ tag byte.
 	true	| 0 0 0 0  1 0 0 1 | N/A               | N/A       |
 			+--------------------------------------------------+
 	
-Where applicable, endianness is little. This is includes variable length structures. 
-
-Bits 5 and 6 must always be zero.
-
-Bits 7 and 8 must be zero for fixed length structures (null, int64, double, false, true) 
-
 For variable length fields bits 7 and 8 encode 4 possible length values:
 
     0 0 = 1 byte
@@ -69,6 +68,8 @@ For variable length fields bits 7 and 8 encode 4 possible length values:
 In hex this is 0x0, 0x4, 0x7, 0x8
 
 For compatibility with existing languages (see priorities 2 & 3) the corresponding length field is a signed 32 bit integer.
+
+Where applicable, endianness is little. This is includes variable length structures. 
 
 ## Examples
 
