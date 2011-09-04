@@ -92,6 +92,19 @@ in the table above (including object).
     0x05                            : 5 bytes for UTF-8 encoding of "world"
     0x77 0x6f 0x72 0x6c 0x64        : the UTF-8 encoding of "world"
      
+## Encoding Size Comparison
+
+The following shows an encoding size (bytes) comparison for example datasets at: http://json.org/example.html
+
+|  JSON Snippet | JSON (ws)	| JSON (no ws) | BSON	| Binson |
+|---------------|-----------|--------------|--------|--------|
+|  glossary     | 603	    | 360	       | 395	| 335    |
+|  menu			| 251	    | 183	       | 219    | 165    |
+|  widget		| 627	    | 389	       | 406    | 346    |
+|  webapp		| 3554	    | 2710	       | 2791   | 2543   |
+|  menu2	    | 898	    | 613	       | 764    | 534    |
+  
+Using jackson and bson4jackson libraries for the comparison. 
 
 ## Interoperability with JSON
 
