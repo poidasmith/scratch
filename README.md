@@ -17,20 +17,20 @@ A reference implementation can be found under the org.boris.binson folder in thi
 
 ## Types
 
-- object: tag, length (number of pairs), length pairs (string, value)
-- array, tag, length (number of values), length values 
-- values
-	- object
-	- array 
-	- string: tag, length, UTF-8 encoded string
-	- number 
+- Object: tag, length (number of pairs), length pairs (string, value)
+- Array, tag, length (number of values), length values 
+- Values
+	- Object
+	- Array 
+	- String: tag, length, UTF-8 encoded string
+	- Number 
 		- variable length signed int32
 		- int64 (signed, 8 bytes)
 		- double (IEEE 754-1985 double precision - 8 bytes)
-	- raw byte array: tag, length, bytes
-	- false 
-	- true
-	- null
+	- Raw byte array: tag, length, bytes
+	- False 
+	- True
+	- Null
 
 As per JSON spec, object pairs are explicitly unordered.
 
