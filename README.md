@@ -73,7 +73,11 @@ In hex the high nibble should be 0x0, 0x4, 0x8, 0xc respectively.
 
 For compatibility with existing languages (see priorities 2 & 3) the corresponding length field is a signed 32 bit integer.
 
-Where applicable, endianness is little. This is includes variable length structures. 
+Where applicable, endianness is little. This is includes variable length structures.
+
+Note that the object type is encoded as size pairs of (key,value) where key is 
+a string encoded as per above table (ie. tag,len,UTF-8) and value is any type
+in the table above (including object). 
 
 ## Examples
 
