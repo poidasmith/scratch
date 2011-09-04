@@ -20,6 +20,38 @@ public final class JSONObject extends JSONValue
         this.values = values;
     }
 
+    public void put(String key, JSONValue value) {
+        values.put(key, value);
+    }
+
+    public void put(String key, String value) {
+        values.put(key, new JSONString(value));
+    }
+
+    public void put(String key, int value) {
+        values.put(key, new JSONInteger(value));
+    }
+
+    public void put(String key, long value) {
+        values.put(key, new JSONLong(value));
+    }
+
+    public void put(String key, double value) {
+        values.put(key, new JSONDouble(value));
+    }
+
+    public void put(String key, boolean value) {
+        values.put(key, new JSONBoolean(value));
+    }
+
+    public void put(String key, JSONValue[] value) {
+        values.put(key, new JSONArray(value));
+    }
+
+    public void put(String key, byte[] value) {
+        values.put(key, new JSONByteArray(value));
+    }
+
     public String toString() {
         return String.valueOf(values);
     }

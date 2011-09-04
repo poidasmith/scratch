@@ -41,7 +41,7 @@ public class BinsonCodec
         int len = 0;
         Map<String, JSONValue> valo = null;
         JSONValue[] vala = null;
-        byte[] vals = null;
+        byte[] valb = null;
         switch (val.type) {
         case TYPE_NULL:
             os.write(TYPE_NULL);
@@ -77,11 +77,15 @@ public class BinsonCodec
         case TYPE_INT32:
             len = ((JSONInteger) val).value;
             break;
+        case TYPE_RAW:
+            valb = ((JSONByteArray) val).buffer;
+            len = valb == null ? 0 : valb.length;
+            break;
         case TYPE_STRING:
             String s = ((JSONString) val).value;
             if (s != null) {
-                vals = s.getBytes(UTF8);
-                len = vals.length;
+                valb = s.getBytes(UTF8);
+                len = valb.length;
             }
             break;
         }
@@ -126,8 +130,9 @@ public class BinsonCodec
                 for (JSONValue v : vala)
                     encode(v, os);
                 break;
+            case TYPE_RAW:
             case TYPE_STRING:
-                os.write(vals);
+                os.write(valb);
                 break;
             case TYPE_INT32:
                 break;
@@ -176,6 +181,7 @@ public class BinsonCodec
                     .longBitsToDouble(l) : l);
         case TYPE_OBJECT:
         case TYPE_ARRAY:
+        case TYPE_RAW:
         case TYPE_STRING:
         case TYPE_INT32:
             int lenlen = (t & 0xc0);
@@ -206,11 +212,17 @@ public class BinsonCodec
                 for (int i = 0; i < len; i++)
                     arr[i] = decode(is, buf, jvals);
                 return jvals ? new JSONArray((JSONValue[]) arr) : arr;
-            case TYPE_STRING:
-                byte[] b = buf.length >= len ? buf : new byte[len];
-                buf = b;
+            case TYPE_RAW:
+                byte[] b = new byte[len];
+                if (b.length > buf.length) // Might as well make use of it
+                    buf = b;
                 readAll(is, b, len);
-                String s = new String(b, 0, len, UTF8);
+                return jvals ? new JSONByteArray(b) : b;
+            case TYPE_STRING:
+                if (buf.length < len)
+                    buf = new byte[len];
+                readAll(is, buf, len);
+                String s = new String(buf, 0, len, UTF8);
                 return jvals ? new JSONString(s) : s;
             case TYPE_INT32:
                 return jvals ? new JSONInteger(len) : len;

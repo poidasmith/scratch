@@ -16,23 +16,21 @@ import java.util.HashMap;
 public class Test
 {
     public static void main(String[] args) throws Exception {
-        // dump(dump(new JSONInteger(0xff000000)));
-        // dump(new JSONInteger(0xc0));
         JSONObject jo = new JSONObject(new HashMap<String, JSONValue>(10));
-        jo.values.put("hello", new JSONString("world"));
-        jo.values.put("b2", JSONValue.TRUE);
-        jo.values.put("b1", JSONValue.FALSE);
-        jo.values.put("d", new JSONDouble(1444.5566));
-        jo.values.put("i1", new JSONInteger(0x000000ff));
-        jo.values.put("i2", new JSONInteger(0x0000ff00));
-        jo.values.put("i3", new JSONInteger(0x00ff0000));
-        jo.values.put("i4", new JSONInteger(0xff000000));
-        jo.values.put("l1", new JSONLong(0x3465674523098712l));
-        jo.values.put("arr1", new JSONArray(new JSONValue[] { JSONValue.TRUE,
-                null, new JSONLong(1245345345345l) }));
+        jo.put("hello", "world");
+        jo.put("b2", true);
+        jo.put("b1", false);
+        jo.put("d", 1444.5566);
+        jo.put("i1", 0x000000ff);
+        jo.put("i2", 0x0000ff00);
+        jo.put("i3", 0x00ff0000);
+        jo.put("i4", 0xff000000);
+        jo.put("l1", 0x3465674523098712l);
+        jo.put("arr1", new JSONValue[] { JSONValue.TRUE,
+                null, new JSONLong(1245345345345l) });
+        jo.put("arr2", new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 });
         JSONObject jo2 = (JSONObject) dump(dump(dump(jo)));
         System.out.println(jo2);
-        // dump(new JSONString("hello there this is a short string of sorts"));
     }
 
     public static JSONValue dump(JSONValue v) throws Exception {
