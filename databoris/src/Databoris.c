@@ -71,6 +71,10 @@ int dbos_debug_print(lua_State *l)
 	return 0;
 }
 
+// networking
+// socket select, open, close, bind, accept?
+//   handler
+
 void dbos_addlibs(lua_State *l)
 {
 	static const luaL_reg fns[] = 

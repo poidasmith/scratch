@@ -32,6 +32,9 @@ function dbos.debug_printf( fmt, ... )
 	dbos.debug_print( string.format( fmt, ... ) )
 end
 
+
+
+
 function dbos.main( argv )
 	dbos.debug_printf( "args: %s", argv )
 	return 62
