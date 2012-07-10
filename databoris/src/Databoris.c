@@ -17,7 +17,7 @@
 #define RES_MAGIC_SIZE 4
 #define INI_RES_MAGIC MAKEFOURCC('I','N','I',' ')
 
-void dbos_addlibs(lua_State *l);
+void dbos_openlib(lua_State *l);
 
 // Helper stubs
 void dbos_dump_stack(lua_State *L);
@@ -31,7 +31,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	l = lua_open();
 	luaL_openlibs(l); // stdlibs
-	dbos_addlibs(l);
+	dbos_openlib(l);
 
 	// Load and execute "kernel"
 	hi = FindResource(hInstance, MAKEINTRESOURCE(1), MAKEINTRESOURCE(RT_INI_FILE));
@@ -61,6 +61,55 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	return lua_tointeger(l, -1);
 }
 
+
+int dbos_encode(lua_State *l)
+{
+	return 0;
+}
+
+int dbos_decode(lua_State *l)
+{
+	return 0;
+}
+
+
+/*
+
+1. variants/tables (first part to do)
+	- decide on variants vs tables
+	- encode/decode as binary (with crc checksums?)
+	- need to encode/decode files and sockets; some stream impl perhaps
+	- encode as diff for edits on large tables (path-based diffs at first level probably)
+	- can we use code fragments to encode diffs?
+	- can look at: http://files.luaforge.net/releases/bintable/bintable/bintable-0.1
+2. file/buffer handling
+	- open file, setvbuf, close
+	- performance tests
+3. database
+	- in-memory structure (skiplist, indexes (name, type, other), compartments)
+	- http://git.cyrusimap.org/cyrus-imapd/tree/lib/cyrusdb_skiplist.c
+	- http://www.dekorte.com/projects/opensource/skipdb/
+	- how to handle iteration of variants/tables by type and name?
+	- transaction id, database id
+	- structure of files (error handling, checksums)
+	- transaction logs
+	- table of transactions to log files
+	- incremental change and compression of logs into an image
+4. networking
+	- socket select, open, close, bind, accept?
+	- handler framework (fn name and table of args)
+	- function impls (insert, update, remove, admin)
+5. replication
+	- topic/queue system
+	- listeners for transactions
+6. graph
+	- a node contains attributes that depend on other nodes (and attributes within the node)
+	- an attribute is calculated or a datastore
+	- how to refer to the code? 
+	- https://github.com/amix/redis_graph
+
+*/
+
 int dbos_debug_print(lua_State *l)
 {	
 	const char* str = luaL_checkstring(l, 1);
@@ -71,22 +120,19 @@ int dbos_debug_print(lua_State *l)
 	return 0;
 }
 
-// networking
-// socket select, open, close, bind, accept?
-//   handler
-
-void dbos_addlibs(lua_State *l)
+void dbos_openlib(lua_State *l)
 {
 	static const luaL_reg fns[] = 
 	{
+		{ "encode",      dbos_encode },
+		{ "decode",      dbos_decode },
 		{ "debug_print", dbos_debug_print },
 	    { NULL,          NULL             }
 	};
 
-	lua_newtable(l);
+	lua_newtable(l);	
 	lua_setglobal(l, "dbos");
 	luaL_register(l, "dbos", fns);
-
 };
 
 void dbos_dump_stack(lua_State *L) 
