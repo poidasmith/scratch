@@ -61,7 +61,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	return lua_tointeger(l, -1);
 }
 
-
 int dbos_encode(lua_State *l)
 {
 	return 0;
@@ -74,6 +73,10 @@ int dbos_decode(lua_State *l)
 
 
 /*
+
+try to structure the dbos_ functions (and any userdata) in such a way so that they represent 
+a hardware abstraction layer. so we just need to implement these functions on 
+another OS (eg linux) to effectively port.
 
 1. variants/tables (first part to do)
 	- decide on variants vs tables
@@ -124,8 +127,8 @@ void dbos_openlib(lua_State *l)
 {
 	static const luaL_reg fns[] = 
 	{
-		{ "encode",      dbos_encode },
-		{ "decode",      dbos_decode },
+		{ "encode",      dbos_encode      },
+		{ "decode",      dbos_decode      },
 		{ "debug_print", dbos_debug_print },
 	    { NULL,          NULL             }
 	};

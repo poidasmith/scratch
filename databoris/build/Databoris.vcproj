@@ -124,7 +124,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)\build\$(ProjectName)-$(ConfigurationName)"
 			IntermediateDirectory="$(ProjectName)-$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="1"
 			ATLMinimizesCRunTimeLibraryUsage="true"
 			CharacterSet="0"
 			WholeProgramOptimization="1"
@@ -172,7 +172,10 @@
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				GenerateManifest="false"
 				IgnoreAllDefaultLibraries="true"
-				SubSystem="1"
+				GenerateMapFile="true"
+				MapExports="true"
+				SubSystem="2"
+				TargetMachine="1"
 				LinkTimeCodeGeneration="0"
 			/>
 			<Tool
