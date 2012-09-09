@@ -8,10 +8,7 @@
 *     Peter Smith
 *******************************************************************************/
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-#include <windows.h>
+#include "Databoris.h"
 
 #define RT_INI_FILE MAKEINTRESOURCE(687)
 #define RES_MAGIC_SIZE 4
@@ -32,6 +29,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	l = lua_open();
 	luaL_openlibs(l); // stdlibs
 	dbos_openlib(l);
+	win32_openlib(l);
 
 	// Load and execute "kernel"
 	hi = FindResource(hInstance, MAKEINTRESOURCE(1), MAKEINTRESOURCE(RT_INI_FILE));
@@ -55,8 +53,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	lua_getglobal(l, "dbos");
 	lua_pushstring(l, "main");
 	lua_rawget(l, -2);
+	lua_pushinteger(l, hInstance);
+	lua_pushinteger(l, hPrevInstance);
 	lua_pushstring(l, lpCmdLine);
-	lua_pcall(l, 1, 1, 0);
+	lua_pushinteger(l, nCmdShow);
+	lua_pcall(l, 4, 1, 0);
 
 	return lua_tointeger(l, -1);
 }
@@ -71,48 +72,6 @@ int dbos_decode(lua_State *l)
 	return 0;
 }
 
-
-/*
-
-try to structure the dbos_ functions (and any userdata) in such a way so that they represent 
-a hardware abstraction layer. so we just need to implement these functions on 
-another OS (eg linux) to effectively port.
-
-1. variants/tables (first part to do)
-	- decide on variants vs tables
-	- encode/decode as binary (with crc checksums?)
-	- need to encode/decode files and sockets; some stream impl perhaps
-	- encode as diff for edits on large tables (path-based diffs at first level probably)
-	- can we use code fragments to encode diffs?
-	- can look at: http://files.luaforge.net/releases/bintable/bintable/bintable-0.1
-2. file/buffer handling
-	- open file, setvbuf, close
-	- performance tests
-3. database
-	- in-memory structure (skiplist, indexes (name, type, other), compartments)
-	- http://git.cyrusimap.org/cyrus-imapd/tree/lib/cyrusdb_skiplist.c
-	- http://www.dekorte.com/projects/opensource/skipdb/
-	- how to handle iteration of variants/tables by type and name?
-	- transaction id, database id
-	- structure of files (error handling, checksums)
-	- transaction logs
-	- table of transactions to log files
-	- incremental change and compression of logs into an image
-4. networking
-	- socket select, open, close, bind, accept?
-	- handler framework (fn name and table of args)
-	- function impls (insert, update, remove, admin)
-5. replication
-	- topic/queue system
-	- listeners for transactions
-6. graph
-	- a node contains attributes that depend on other nodes (and attributes within the node)
-	- an attribute is calculated or a datastore
-	- how to refer to the code? 
-	- https://github.com/amix/redis_graph
-
-*/
-
 int dbos_debug_print(lua_State *l)
 {	
 	const char* str = luaL_checkstring(l, 1);
@@ -121,6 +80,11 @@ int dbos_debug_print(lua_State *l)
 		OutputDebugString(str);
 
 	return 0;
+}
+
+int dbos_table_ref_test(lua_State *l)
+{
+
 }
 
 void dbos_openlib(lua_State *l)
