@@ -10,6 +10,13 @@
 
 #include "Databoris.h"
 
+int win32_CreateIconFromResourceEx(lua_State *l)
+{
+	
+
+	return 1;
+}
+
 // A structure that we pass through windows and store in GWLP_USERDATA so we
 // can call through the window handler functions in Lua
 typedef struct {
@@ -91,16 +98,22 @@ int win32_DestroyWindow(lua_State *l)
 
 int win32_LoadCursor(lua_State *l)
 {
-	const char* lpCursorName = lua_tostring(l, 1);
-	HCURSOR hCursor          = LoadCursor(NULL, lpCursorName);
+	HCURSOR hCursor;
+	if(lua_isstring(l, 1))
+		hCursor = LoadCursor(NULL, lua_tostring(l, 1));
+	else
+		hCursor = LoadCursor(NULL, MAKEINTRESOURCE(lua_tointeger(l, 1)));
 	lua_pushinteger(l, hCursor);
 	return 1;
 }
 
 int win32_LoadIcon(lua_State *l)
 {
-	const char* lpIconName = lua_tostring(l, 1);
-	HICON hIcon            = LoadIcon(NULL, lpIconName);
+	HICON hIcon;
+	if(lua_isstring(l, 1))
+		hIcon = LoadIcon(NULL, lua_tostring(l, 1));
+	else
+		hIcon = LoadIcon(NULL, MAKEINTRESOURCE(lua_tointeger(l, 1)));
 	lua_pushinteger(l, hIcon);
 	return 1;
 }

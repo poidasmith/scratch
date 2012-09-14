@@ -25,11 +25,16 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	HRSRC hi;
 	char *script, *err;
 	lua_State *l;
+	char temp[MAX_PATH];
 
 	l = lua_open();
 	luaL_openlibs(l); // stdlibs
 	dbos_openlib(l);
 	win32_openlib(l);
+
+	s = WS_EX_CLIENTEDGE;
+	sprintf(temp, "%x\n", s);
+	OutputDebugString(temp);
 
 	// Load and execute "kernel"
 	hi = FindResource(hInstance, MAKEINTRESOURCE(1), MAKEINTRESOURCE(RT_INI_FILE));

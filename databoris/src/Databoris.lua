@@ -55,7 +55,7 @@ end
 
 function win32.wnd_close(hwnd, msg, wparam, lparam)
 	win32.DestroyWindow(hwnd)
-	return false
+	return true, 0
 end
 
 function win32.wnd_destroy(...)
@@ -63,24 +63,33 @@ function win32.wnd_destroy(...)
 	return true, 0
 end
 
+win32.WS_EX_WINDOWEDGE    = 0x100
 win32.WS_EX_CLIENTEDGE    = 0x200
 win32.WS_OVERLAPPEDWINDOW = 0xCF0000
 win32.CW_USEDEFAULT       = 0x80000000
 win32.WM_CLOSE            = 0x0010
 win32.WM_DESTROY          = 0x0002
 
+-- icons
+win32.IDI_APPLICATION = 32512
+
+-- cursors
+win32.IDC_ARROW = 32512
+
 function dbos.main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 	local clz = "lua_test_window"
-	win32.RegisterClassEx(clz)
+	local cursor = win32.LoadCursor(win32.IDC_ARROW)
+	local icon   = win32.LoadIcon(win32.IDI)
+	win32.RegisterClassEx(clz, 0, 0, hInstance, icon, cursor, 11)
 	local hwnd = win32.CreateWindowEx( 
-		win32.WS_EX_CLIENTEDGE, 
+		win32.WS_EX_WINDOWEDGE, 
 		clz, 
 		"The title of my window",
 		win32.WS_OVERLAPPEDWINDOW,
 		win32.CW_USEDEFAULT,
 		win32.CW_USEDEFAULT,
-		240,
-		120,
+		540,
+		420,
 		nil,
 		nil,
 		hInstance,
