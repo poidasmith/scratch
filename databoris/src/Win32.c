@@ -90,9 +90,26 @@ LRESULT CALLBACK win32_DefWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 
 int win32_DestroyWindow(lua_State *l)
 {
-	long hWnd = luaL_checklong(l, 1);
-	BOOL res  = DestroyWindow(hWnd);
+	int hWnd = luaL_checkinteger(l, 1);
+	BOOL res = DestroyWindow(hWnd);
 	lua_pushboolean(l, res);
+	return 1;
+}
+
+int win32_GetModuleFileName(lua_State *l)
+{
+	char path[MAX_PATH];
+	int hModule = luaL_optinteger(l, 1, 0);
+	GetModuleFileName(hModule, path, MAX_PATH);
+	lua_pushstring(l, path);
+	return 1;
+}
+
+int win32_GetModuleHandle(lua_State *l)
+{
+	char* module = luaL_optstring(l, 1, NULL);
+	HMODULE hModule = GetModuleHandle(module);
+	lua_pushinteger(l, hModule);
 	return 1;
 }
 
@@ -205,18 +222,20 @@ void win32_openlib(lua_State *l)
 {
 	static const luaL_reg fns[] = 
 	{
-		{ "CreateWindowEx",  win32_CreateWindowEx },
-		{ "DestroyWindow",   win32_DestroyWindow },
-		{ "LoadCursor",      win32_LoadCursor },
-		{ "LoadIcon",        win32_LoadIcon },
-		{ "MessageBox",      win32_MessageBox },
-		{ "MessageLoop",	 win32_MessageLoop },
-		{ "PostMessage",     win32_PostMessage },
-		{ "PostQuitMessage", win32_PostQuitMessage },
-		{ "RegisterClassEx", win32_RegisterClassEx },
-		{ "ShowWindow",		 win32_ShowWindow },
-		{ "UpdateWindow",	 win32_UpdateWindow },
-	    { NULL,              NULL             }
+		{ "CreateWindowEx",    win32_CreateWindowEx },
+		{ "DestroyWindow",     win32_DestroyWindow },
+		{ "GetModuleFileName", win32_GetModuleFileName },
+		{ "GetModuleHandle",   win32_GetModuleHandle },
+		{ "LoadCursor",        win32_LoadCursor },
+		{ "LoadIcon",          win32_LoadIcon },
+		{ "MessageBox",        win32_MessageBox },
+		{ "MessageLoop",	   win32_MessageLoop },
+		{ "PostMessage",       win32_PostMessage },
+		{ "PostQuitMessage",   win32_PostQuitMessage },
+		{ "RegisterClassEx",   win32_RegisterClassEx },
+		{ "ShowWindow",		   win32_ShowWindow },
+		{ "UpdateWindow",	   win32_UpdateWindow },
+	    { NULL,                NULL             }
 	};
 
 	lua_newtable(l);	
