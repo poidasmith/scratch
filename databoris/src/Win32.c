@@ -10,11 +10,19 @@
 
 #include "Databoris.h"
 
-int win32_CreateIconFromResourceEx(lua_State *l)
+__declspec(dllexport) int win32_BeginPaint(lua_State *l)
 {
-	
+	HWND hwnd = luaL_checkinteger(l, 1);
+	PAINTSTRUCT* ps = (PAINTSTRUCT*) malloc(sizeof(PAINTSTRUCT));
+	HDC hdc = BeginPaint(hwnd, ps);
+	lua_pushinteger(l, ps);
+	lua_pushinteger(l, hdc);
+	return 2;
+}
 
-	return 1;
+__declspec(dllexport) int win32_CreateIconFromResourceEx(lua_State *l)
+{
+	return 0;
 }
 
 // A structure that we pass through windows and store in GWLP_USERDATA so we
@@ -24,7 +32,7 @@ typedef struct {
 	int ref;
 } LUA_WINDOW_CTX;
 
-int win32_CreateWindowEx(lua_State *l)
+__declspec(dllexport) int win32_CreateWindowEx(lua_State *l)
 {
 	DWORD dwExStyle      = luaL_checkint(l, 1);
 	LPCTSTR lpClassName  = luaL_checkstring(l, 2);
@@ -88,7 +96,7 @@ LRESULT CALLBACK win32_DefWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	return processed ? lResult : DefWindowProc(hwnd, msg, wParam, lParam);
 };
 
-int win32_DestroyWindow(lua_State *l)
+__declspec(dllexport) int win32_DestroyWindow(lua_State *l)
 {
 	int hWnd = luaL_checkinteger(l, 1);
 	BOOL res = DestroyWindow(hWnd);
@@ -96,7 +104,23 @@ int win32_DestroyWindow(lua_State *l)
 	return 1;
 }
 
-int win32_GetModuleFileName(lua_State *l)
+__declspec(dllexport) int win32_EndPaint(lua_State *l)
+{
+	HWND hwnd = luaL_checkinteger(l, 1);
+	PAINTSTRUCT* ps = (PAINTSTRUCT*) luaL_checkinteger(l, 2);
+	EndPaint(hwnd, ps);
+	return 0;
+}
+
+__declspec(dllexport) int win32_GetCurrentDirectory(lua_State* l)
+{
+	char path[MAX_PATH];
+	DWORD len = GetCurrentDirectory(MAX_PATH, path);
+	lua_pushlstring(l, path, len);
+	return 1;
+}
+
+__declspec(dllexport) int win32_GetModuleFileName(lua_State *l)
 {
 	char path[MAX_PATH];
 	int hModule = luaL_optinteger(l, 1, 0);
@@ -105,7 +129,7 @@ int win32_GetModuleFileName(lua_State *l)
 	return 1;
 }
 
-int win32_GetModuleHandle(lua_State *l)
+__declspec(dllexport) int win32_GetModuleHandle(lua_State *l)
 {
 	char* module = luaL_optstring(l, 1, NULL);
 	HMODULE hModule = GetModuleHandle(module);
@@ -113,7 +137,7 @@ int win32_GetModuleHandle(lua_State *l)
 	return 1;
 }
 
-int win32_LoadCursor(lua_State *l)
+__declspec(dllexport) int win32_LoadCursor(lua_State *l)
 {
 	HCURSOR hCursor;
 	if(lua_isstring(l, 1))
@@ -124,7 +148,7 @@ int win32_LoadCursor(lua_State *l)
 	return 1;
 }
 
-int win32_LoadIcon(lua_State *l)
+__declspec(dllexport) int win32_LoadIcon(lua_State *l)
 {
 	HICON hIcon;
 	if(lua_isstring(l, 1))
@@ -135,7 +159,7 @@ int win32_LoadIcon(lua_State *l)
 	return 1;
 }
 
-int win32_MessageBox(lua_State *l)
+__declspec(dllexport) int win32_MessageBox(lua_State *l)
 {
 	HWND hWnd             = luaL_optinteger(l, 1, 0);
 	const char* lpText    = lua_tostring(l, 2);
@@ -146,7 +170,7 @@ int win32_MessageBox(lua_State *l)
 	return 1;
 }
 
-int win32_MessageLoop(lua_State *l)
+__declspec(dllexport) int win32_MessageLoop(lua_State *l)
 {
 	MSG msg;
 	while(GetMessage(&msg, 0, 0, 0))
@@ -158,7 +182,14 @@ int win32_MessageLoop(lua_State *l)
 	return 1;
 }
 
-int win32_PostMessage(lua_State *l)
+__declspec(dllexport) int win32_OutputDebugString(lua_State *l)
+{
+	const char* str = lua_tostring(l, 1);
+	OutputDebugString(str);
+	return 0;
+}
+
+__declspec(dllexport) int win32_PostMessage(lua_State *l)
 {
 	HWND hwnd      = luaL_checkinteger(l, 1);
 	UINT msg       = luaL_checkinteger(l, 2);
@@ -169,14 +200,14 @@ int win32_PostMessage(lua_State *l)
 	return 1;
 }
 
-int win32_PostQuitMessage(lua_State *l)
+__declspec(dllexport) int win32_PostQuitMessage(lua_State *l)
 {
 	int nExitCode = luaL_optinteger(l, 1, 0);
 	PostQuitMessage(nExitCode);
 	return 0;
 }
 
-int win32_RegisterClassEx(lua_State *l)
+__declspec(dllexport) int win32_RegisterClassEx(lua_State *l)
 {
 	WNDCLASSEX wc;
 	ATOM res;
@@ -199,46 +230,20 @@ int win32_RegisterClassEx(lua_State *l)
 	return 1;
 }
 
-int win32_ShowWindow(lua_State *l)
+__declspec(dllexport) int win32_ShowWindow(lua_State *l)
 {
 	HWND hwnd = luaL_checkinteger(l, 1);
 	int cmd   = luaL_checkinteger(l, 2);
 	BOOL res  = ShowWindow(hwnd, cmd);
-
 	lua_pushboolean(l, res);
 	return 1;
 }
 
-int win32_UpdateWindow(lua_State *l)
+__declspec(dllexport) int win32_UpdateWindow(lua_State *l)
 {
 	HWND hwnd = luaL_checkinteger(l, 1);
 	BOOL res  = UpdateWindow(hwnd);
-
 	lua_pushboolean(l, res);
 	return 1;
 }
 
-void win32_openlib(lua_State *l)
-{
-	static const luaL_reg fns[] = 
-	{
-		{ "CreateWindowEx",    win32_CreateWindowEx },
-		{ "DestroyWindow",     win32_DestroyWindow },
-		{ "GetModuleFileName", win32_GetModuleFileName },
-		{ "GetModuleHandle",   win32_GetModuleHandle },
-		{ "LoadCursor",        win32_LoadCursor },
-		{ "LoadIcon",          win32_LoadIcon },
-		{ "MessageBox",        win32_MessageBox },
-		{ "MessageLoop",	   win32_MessageLoop },
-		{ "PostMessage",       win32_PostMessage },
-		{ "PostQuitMessage",   win32_PostQuitMessage },
-		{ "RegisterClassEx",   win32_RegisterClassEx },
-		{ "ShowWindow",		   win32_ShowWindow },
-		{ "UpdateWindow",	   win32_UpdateWindow },
-	    { NULL,                NULL             }
-	};
-
-	lua_newtable(l);	
-	lua_setglobal(l, "win32");
-	luaL_register(l, "win32", fns);
-};

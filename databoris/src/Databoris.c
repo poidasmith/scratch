@@ -30,7 +30,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	l = lua_open();
 	luaL_openlibs(l); // stdlibs
 	dbos_openlib(l);
-	win32_openlib(l);
 
 	s = WS_EX_CLIENTEDGE;
 	sprintf(temp, "%x\n", s);
@@ -92,14 +91,23 @@ int dbos_table_ref_test(lua_State *l)
 
 }
 
+int dbos_GetProcAddress(lua_State *l)
+{
+	const char* fn = luaL_checkstring(l, 1);
+	FARPROC proc   = GetProcAddress(NULL, fn);
+	lua_pushcfunction(l, (lua_CFunction) proc);
+	return 1;
+}
+
 void dbos_openlib(lua_State *l)
 {
 	static const luaL_reg fns[] = 
 	{
-		{ "encode",      dbos_encode      },
-		{ "decode",      dbos_decode      },
-		{ "debug_print", dbos_debug_print },
-	    { NULL,          NULL             }
+		{ "encode",         dbos_encode      },
+		{ "decode",         dbos_decode      },
+		{ "debug_print",    dbos_debug_print },
+		{ "GetProcAddress", dbos_GetProcAddress },
+	    { NULL,             NULL             }
 	};
 
 	lua_newtable(l);	
