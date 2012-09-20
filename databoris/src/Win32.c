@@ -334,15 +334,3 @@ __declspec(dllexport) int win32_UpdateWindow(lua_State *l)
 	return 1;
 }
 
-// Helpers
-
-__declspec(dllexport) int win32_bitor(lua_State *l)
-{
-	int v1 = luaL_optinteger(l, 1, 0);
-	int v2 = luaL_optinteger(l, 2, 0);
-	int v3 = luaL_optinteger(l, 3, 0);
-	int v4 = luaL_optinteger(l, 4, 0);
-	int v5 = luaL_optinteger(l, 5, 0);
-	lua_pushinteger(l, v1 | v2 | v3 | v4 | v5);
-	return 1;
-}

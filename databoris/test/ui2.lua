@@ -1,21 +1,26 @@
 
 local win32 = require "win32"
 local log   = require "log"
+local bitop = require "bitop"
 
 local ID_FILE_EXIT = 9001
 
---AppendMenu(hSubMenu, MF_STRING, ID_FILE_EXIT, "E&xit");
-  --      AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&File");
 local function wnd_create(hwnd, msg, wparam, lparam)
 	local menu = win32.CreateMenu();
 	local file = win32.CreatePopupMenu();
 	win32.AppendMenu(file, win32.MF_STRING, ID_FILE_EXIT, "E&xit");
-	win32.AppendMenu(menu, win32.bitor(win32.MF_STRING, win32.MF_POPUP), file, "&File")
+	win32.AppendMenu(menu, bitop.orr(win32.MF_STRING, win32.MF_POPUP), file, "&File")
 	win32.SetMenu(hwnd, menu);
 end
 
 local function wnd_close(hwnd, msg, wparam, lparam)
 	win32.DestroyWindow(hwnd)
+end
+
+local function wnd_command(hwnd, msg, wparam, lparam)
+	if bitop.loword(wparam) == ID_FILE_EXIT then
+		win32.DestroyWindow(hwnd)
+	end
 end
 
 local function wnd_lbuttondown(hwnd, ...)
