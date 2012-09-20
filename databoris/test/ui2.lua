@@ -1,42 +1,40 @@
 
 local win32 = require "win32"
+local log   = require "log"
 
-local function map_wndproc(handlers)
-	return function(hwnd, msg, wparam, lparam)
-		local f = handlers[msg]
-		if f ~= nil then
-			return f(hwnd, msg, wparam, lparam) 
-		end
-		return false
-	end
+local ID_FILE_EXIT = 9001
+
+--AppendMenu(hSubMenu, MF_STRING, ID_FILE_EXIT, "E&xit");
+  --      AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&File");
+local function wnd_create(hwnd, msg, wparam, lparam)
+	local menu = win32.CreateMenu();
+	local file = win32.CreatePopupMenu();
+	win32.AppendMenu(file, win32.MF_STRING, ID_FILE_EXIT, "E&xit");
+	win32.AppendMenu(menu, win32.bitor(win32.MF_STRING, win32.MF_POPUP), file, "&File")
+	win32.SetMenu(hwnd, menu);
 end
 
 local function wnd_close(hwnd, msg, wparam, lparam)
 	win32.DestroyWindow(hwnd)
-	return true, 0
 end
 
 local function wnd_lbuttondown(hwnd, ...)
-	return true, 0
 end
 
 local function wnd_destroy(...)
 	win32.PostQuitMessage(0)
-	return false, 0
 end
 
-local function wnd_erasebknd(...)	
-	return false, 0
+local function wnd_erasebkgnd(...)	
 end
 
 local function wnd_paint(hwnd, msg, wparam, lparam)	
 	local ps, hdc = win32.BeginPaint(hwnd)
-	
+	win32.TextOut(hdc, 10, 10, "testing");
 	win32.EndPaint(hwnd, ps)
-	return true, 0
 end
 
-local main = function(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
+local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 	local clz = "lua_test_window"
 	local cursor = win32.LoadCursor(win32.IDC_ARROW)
 	local icon   = win32.LoadIcon(win32.IDI)
@@ -54,11 +52,13 @@ local main = function(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 		nil,
 		hInstance,
 		nil,
-		map_wndproc({
+		win32.map_wndproc({
+			[win32.WM_CREATE]      = wnd_create,
 			[win32.WM_CLOSE]       = wnd_close,
+			[win32.WM_COMMAND]     = wnd_command,
 			[win32.WM_DESTROY]     = wnd_destroy,
 			[win32.WM_LBUTTONDOWN] = wnd_lbuttondown,
-			[win32.WM_ERASEBKGND]  = wnd_erasebknd,
+			[win32.WM_ERASEBKGND]  = wnd_erasebkgnd,
 			[win32.WM_PAINT]       = wnd_paint
 		})
 	)

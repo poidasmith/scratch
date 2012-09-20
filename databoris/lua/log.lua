@@ -1,5 +1,5 @@
 
---require "win32"
+local win32 = require "win32"
 
 local function stringit(t) 
 	local res = ""
