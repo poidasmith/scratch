@@ -12,6 +12,7 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include <windows.h>
+#include <commctrl.h>
 
 extern void win32_openlib(lua_State *l);
 extern void dbos_dump_stack(lua_State *l);

@@ -13,8 +13,11 @@ win32.WM_CLOSE            = 0x0010
 win32.WM_DESTROY          = 0x0002
 win32.WM_COMMAND          = 0x0111
 win32.WM_LBUTTONDOWN      = 0x0201
+win32.WM_RBUTTONDOWN      = 0x0204
+win32.WM_MOUSEWHEEL       = 0x020A
 win32.WM_ERASEBKGND		  = 0x0014
 win32.WM_PAINT            = 0x000F
+win32.WM_SIZE             = 0x0005
 
 -- icons
 win32.IDI_APPLICATION = 32512
@@ -37,11 +40,26 @@ fns = {
 	"CreateIconFromResourceEx",
 	"CreateMenu",
 	"CreatePopupMenu",
+	"CreateStatusWindow",
+	"CreateSolidBrush",
 	"CreateWindowEx",
 	"DestroyWindow",
+	"DrawEdge",
+	"DrawFocusRect",
+	"DrawFrameControl",
+	"DrawText",
+	"EndPaint",
+	"FillRect",
+	"GetBkColor",
+	"GetBkMode",
+	"GetClientRect",
 	"GetCurrentDirectory",
 	"GetModuleFileName",
 	"GetModuleHandle",
+	"GetStockObject",
+	"GetWindowDC",
+	"InitCommonControlsEx",
+	"InvalidateRect",
 	"LoadCursor",
 	"LoadIcon",
 	"MessageBox",
@@ -49,17 +67,24 @@ fns = {
 	"OutputDebugString",
 	"PostMessage",
 	"PostQuitMessage",
+	"Rectangle",
+	"RedrawWindow",
 	"RegisterClassEx",
+	"SelectObject",
+	"SendMessage",
+	"SetBkColor",
+	"SetBkMode",
 	"SetMenu",
 	"ShowWindow",
 	"TextOut",
 	"UpdateWindow",
 	
 	-- helpers
-	"bitor"
+	"RGB",
 }
 
 for k, v in next, fns do
+	-- TODO: check for errors
 	win32[ v ] = dbos.GetProcAddress("win32_" .. v)
 end
 
@@ -74,7 +99,7 @@ end
 local RECT_mt = { __index = RECT_idx } 
 win32.RECT = function(left, top, right, bottom)
 	local rc = RECT_new(left, top, right, bottom)
-	setmetatable(rc, RECT_mt)
+	--setmetatable(rc, RECT_mt)
 	return rc	
 end
 

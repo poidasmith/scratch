@@ -1,16 +1,21 @@
 
-local win32 = require "win32"
-local log   = require "log"
-local bitop = require "bitop"
+local win32 = require("win32")
+local log   = require("log")
+local bitop = require("bitop")
 
-local ID_FILE_EXIT = 9001
+local ID_FILE_EXIT   = 9001
+local ID_STATUS_BAR  = 9002
+local SBARS_SIZEGRIP = 0x100
+
+local statusbar = 0
 
 local function wnd_create(hwnd, msg, wparam, lparam)
-	local menu = win32.CreateMenu();
-	local file = win32.CreatePopupMenu();
-	win32.AppendMenu(file, win32.MF_STRING, ID_FILE_EXIT, "E&xit");
+	local menu = win32.CreateMenu()
+	local file = win32.CreatePopupMenu()
+	win32.AppendMenu(file, win32.MF_STRING, ID_FILE_EXIT, "E&xit")
 	win32.AppendMenu(menu, bitop.orr(win32.MF_STRING, win32.MF_POPUP), file, "&File")
-	win32.SetMenu(hwnd, menu);
+	win32.SetMenu(hwnd, menu)
+	statusbar = win32.CreateStatusWindow(0x50000000, "Ready", hwnd, ID_STATUS_BAR)
 end
 
 local function wnd_close(hwnd, msg, wparam, lparam)
@@ -23,27 +28,56 @@ local function wnd_command(hwnd, msg, wparam, lparam)
 	end
 end
 
+local count = 0
+
 local function wnd_lbuttondown(hwnd, ...)
+	count = count + 1
+	win32.RedrawWindow(hwnd)
+end
+
+local function wnd_lbuttondown(hwnd, ...)
+	count = count - 1
+	win32.RedrawWindow(hwnd)
 end
 
 local function wnd_destroy(...)
 	win32.PostQuitMessage(0)
 end
 
-local function wnd_erasebkgnd(...)	
+local function wnd_erasebkgnd(...)
+	return 0, true
 end
+
+local OEM_FIXED_FONT = 11
+local BLACK_PEN = 7
 
 local function wnd_paint(hwnd, msg, wparam, lparam)	
 	local ps, hdc = win32.BeginPaint(hwnd)
-	win32.TextOut(hdc, 10, 10, "testing");
+	local rect = win32.RECT()
+	win32.GetClientRect(hwnd, rect)
+	--log.println({top=rect.top, left=rect.left, right=rect.right, bottom=rect.bottom})
+	local hbr = win32.GetStockObject(count % 5)
+	win32.FillRect(hdc, rect, hbr)
+	--local pen = win32.GetStockObject(BLACK_PEN)
+	--local font = win32.GetStockObject(OEM_FIXED_FONT)
+	--win32.SelectObject(pen)
+	--win32.SelectObject(font)
+	--win32.SetTextColor(hdc, win32.RGB(255, 0, 255))
+	win32.TextOut(hdc, 1, 1, "testing" .. count)
 	win32.EndPaint(hwnd, ps)
 end
 
+local function wnd_size(hwnd, msg, wparam, lparam)
+	win32.SendMessage(statusbar, msg, wparam, lparam)
+end
+
+
 local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
+	win32.InitCommonControlsEx()
 	local clz = "lua_test_window"
 	local cursor = win32.LoadCursor(win32.IDC_ARROW)
 	local icon   = win32.LoadIcon(win32.IDI)
-	win32.RegisterClassEx(clz, 0, 0, hInstance, icon, cursor, 11)
+	win32.RegisterClassEx(clz, 0, 0, 0, hInstance, icon, cursor, 11)
 	local hwnd = win32.CreateWindowEx( 
 		win32.WS_EX_WINDOWEDGE, 
 		clz, 
@@ -63,8 +97,10 @@ local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 			[win32.WM_COMMAND]     = wnd_command,
 			[win32.WM_DESTROY]     = wnd_destroy,
 			[win32.WM_LBUTTONDOWN] = wnd_lbuttondown,
+			[win32.WM_RBUTTONDOWN] = wnd_rbuttondown,
 			[win32.WM_ERASEBKGND]  = wnd_erasebkgnd,
-			[win32.WM_PAINT]       = wnd_paint
+			[win32.WM_PAINT]       = wnd_paint,
+			[win32.WM_SIZE]        = wnd_size
 		})
 	)
 	win32.ShowWindow(hwnd, nCmdShow)

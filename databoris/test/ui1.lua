@@ -5,8 +5,10 @@ local events = {}
 
 local view = {
 	{menubar,
-		{menu, name = "File",
-			{menu, name = "Exit", action = events.file_exit}
+		{menu, 
+			name = "&File", 
+		    children = function(self, ctx)
+			end
 		}
 	},
 }

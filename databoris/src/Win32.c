@@ -10,6 +10,8 @@
 
 #include "Databoris.h"
 
+//#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 __declspec(dllexport) int win32_AppendMenu(lua_State *l)
 {
 	HMENU hMenu       = luaL_checkinteger(l, 1);
@@ -47,6 +49,25 @@ __declspec(dllexport) int win32_CreatePopupMenu(lua_State *l)
 	return 1;
 };
 
+__declspec(dllexport) int win32_CreateStatusWindow(lua_State *l)
+{
+	LONG style = luaL_checklong(l, 1);
+	const char* lpszText = luaL_checkstring(l, 2);
+	HWND hwndParent = luaL_checkinteger(l, 3);
+	WORD wID = luaL_checkinteger(l, 4);
+	HWND hwnd = CreateStatusWindow(style, lpszText, hwndParent, wID);
+	lua_pushinteger(l, hwnd);
+	return 1;
+};
+
+__declspec(dllexport) int win32_CreateSolidBrush(lua_State *l)
+{
+	COLORREF clr = luaL_checkinteger(l, 1);
+	HBRUSH hbr   = CreateSolidBrush(clr);
+	lua_pushinteger(l, hbr);
+	return 1;
+};
+
 // A structure that we pass through windows and store in GWLP_USERDATA so we
 // can call through the window handler functions in Lua
 typedef struct {
@@ -67,6 +88,8 @@ __declspec(dllexport) int win32_CreateWindowEx(lua_State *l)
 	HWND hWndParent      = luaL_optinteger(l, 9, 0);
 	HMENU hMenu          = luaL_optinteger(l, 10, 0);
 	HINSTANCE hInstance  = luaL_optinteger(l, 11, 0);
+
+	// TODO: handle empty wndproc
 	int ref              = luaL_ref(l, LUA_REGISTRYINDEX); // store a ref to the wnd proc fn
 	LUA_WINDOW_CTX* ctx  = malloc(sizeof(LUA_WINDOW_CTX));
 	HWND res             = 0;
@@ -126,6 +149,49 @@ __declspec(dllexport) int win32_DestroyWindow(lua_State *l)
 	return 1;
 }
 
+__declspec(dllexport) int win32_DrawEdge(lua_State *l)
+{
+	HDC hdc       = luaL_checkinteger(l, 1);
+	LPRECT qrc    = (LPRECT) lua_touserdata(l, 2);
+	UINT edge     = luaL_checkinteger(l, 3);
+	UINT grfFlags = luaL_checkinteger(l, 4);
+	BOOL res      = DrawEdge(hdc, qrc, edge, grfFlags);
+	lua_pushboolean(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_DrawFocusRect(lua_State *l)
+{
+	HDC hdc       = luaL_checkinteger(l, 1);
+	LPRECT qrc    = (LPRECT) lua_touserdata(l, 2);
+	BOOL res      = DrawFocusRect(hdc, qrc);
+	lua_pushboolean(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_DrawFrameControl(lua_State *l)
+{
+	HDC hdc       = luaL_checkinteger(l, 1);
+	LPRECT qrc    = (LPRECT) lua_touserdata(l, 2);
+	UINT uType    = luaL_checkinteger(l, 3);
+	UINT uState   = luaL_checkinteger(l, 4);
+	BOOL res      = DrawFrameControl(hdc, qrc, uType, uState);
+	lua_pushboolean(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_DrawText(lua_State *l)
+{
+	HDC hdc         = luaL_checkinteger(l, 1);
+	const char* str = luaL_checkstring(l, 2);
+	int nCount      = luaL_optinteger(l, 3, lua_strlen(l, 2));
+	LPRECT lprc     = (LPRECT) lua_touserdata(l, 4);
+	UINT format     = luaL_checkinteger(l, 5);
+	int res         = DrawText(hdc, str, nCount, lprc, format);
+	lua_pushinteger(l, res);
+	return 1;
+}
+
 __declspec(dllexport) int win32_EndPaint(lua_State *l)
 {
 	HWND hwnd = luaL_checkinteger(l, 1);
@@ -141,6 +207,31 @@ __declspec(dllexport) int win32_FillRect(lua_State *l)
 	HBRUSH hbr  = luaL_checkinteger(l, 3);
 	int res     = FillRect(hdc, lprc, hbr);
 	lua_pushinteger(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_GetBkColor(lua_State* l)
+{
+	HDC hdc     = luaL_checkinteger(l, 1);
+	COLORREF bk = GetBkColor(hdc);
+	lua_pushinteger(l, bk);
+	return 1;
+}
+
+__declspec(dllexport) int win32_GetBkMode(lua_State* l)
+{
+	HDC hdc  = luaL_checkinteger(l, 1);
+	int mode = GetBkMode(hdc);
+	lua_pushinteger(l, mode);
+	return 1;
+}
+
+__declspec(dllexport) int win32_GetClientRect(lua_State* l)
+{
+	HWND hwnd   = luaL_checkinteger(l, 1);
+	LPRECT rect = (RECT*) lua_touserdata(l, 2);
+	BOOL res    = GetClientRect(hwnd, rect);
+	lua_pushboolean(l, res);
 	return 1;
 }
 
@@ -169,24 +260,53 @@ __declspec(dllexport) int win32_GetModuleHandle(lua_State *l)
 	return 1;
 }
 
+__declspec(dllexport) int win32_GetStockObject(lua_State *l)
+{
+	int obj     = luaL_checkinteger(l, 1);
+	HGDIOBJ hob = GetStockObject(obj);
+	lua_pushinteger(l, hob);
+	return 1;
+}
+
+__declspec(dllexport) int win32_GetWindowDC(lua_State *l)
+{
+	HWND hwnd = luaL_checkinteger(l, 1);
+	HDC hdc   = GetWindowDC(hwnd);
+	lua_pushinteger(l, hdc);
+	return 1;
+}
+
+__declspec(dllexport) int win32_InitCommonControlsEx(lua_State *l)
+{
+	INITCOMMONCONTROLSEX ics;
+	BOOL res;
+	ics.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	ics.dwICC = ICC_BAR_CLASSES;
+	res = InitCommonControlsEx(&ics);
+	lua_pushboolean(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_InvalidateRect(lua_State *l)
+{
+	HWND hwnd   = luaL_checkinteger(l, 1);
+	LPRECT lprc = (LPRECT) lua_touserdata(l, 2);
+	BOOL erase  = lua_toboolean(l, 3);
+	BOOL res    = InvalidateRect(hwnd, lprc, erase);
+	lua_pushboolean(l, res);
+	return 1;
+}
+
 __declspec(dllexport) int win32_LoadCursor(lua_State *l)
 {
-	HCURSOR hCursor;
-	if(lua_isstring(l, 1))
-		hCursor = LoadCursor(NULL, lua_tostring(l, 1));
-	else
-		hCursor = LoadCursor(NULL, MAKEINTRESOURCE(lua_tointeger(l, 1)));
+	HCURSOR hCursor = LoadCursor(NULL, MAKEINTRESOURCE(lua_tointeger(l, 1)));
 	lua_pushinteger(l, hCursor);
 	return 1;
 }
 
 __declspec(dllexport) int win32_LoadIcon(lua_State *l)
 {
-	HICON hIcon;
-	if(lua_isstring(l, 1))
-		hIcon = LoadIcon(NULL, lua_tostring(l, 1));
-	else
-		hIcon = LoadIcon(NULL, MAKEINTRESOURCE(lua_tointeger(l, 1)));
+	HICON hIcon = LoadIcon(NULL, MAKEINTRESOURCE(lua_tointeger(l, 1)));
 	lua_pushinteger(l, hIcon);
 	return 1;
 }
@@ -239,29 +359,6 @@ __declspec(dllexport) int win32_PostQuitMessage(lua_State *l)
 	return 0;
 }
 
-__declspec(dllexport) int win32_RECT_new(lua_State *l)
-{
-	int left   = luaL_optinteger(l, 1, 0);
-	int top    = luaL_optinteger(l, 2, 0);
-	int right  = luaL_optinteger(l, 3, 0);
-	int bottom = luaL_optinteger(l, 4, 0);
-	RECT* lprc = (RECT*) lua_newuserdata(l, sizeof(RECT));
-	lprc->left = left;
-	lprc->top  = top;
-	lprc->right = right;
-	lprc->bottom = bottom;
-	return 1;
-}
-
-__declspec(dllexport) int win32_RECT_get(lua_State *l)
-{
-	int* lprc  = (int*) lua_touserdata(l, 1);
-	int idx    = luaL_checkinteger(l, 2);
-	int val    = lprc[idx];
-	lua_pushinteger(l, val);
-	return 1;
-}
-
 __declspec(dllexport) int win32_Rectangle(lua_State *l)
 {
 	HDC hdc    = luaL_checkinteger(l, 1);
@@ -270,6 +367,14 @@ __declspec(dllexport) int win32_Rectangle(lua_State *l)
 	int right  = luaL_checkinteger(l, 4);
 	int bottom = luaL_checkinteger(l, 5);
 	BOOL res   = Rectangle(hdc, left, top, right, bottom);
+	lua_pushboolean(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_RedrawWindow(lua_State *l)
+{
+	HWND hwnd  = luaL_checkinteger(l, 1);
+	BOOL res   = RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 	lua_pushboolean(l, res);
 	return 1;
 }
@@ -283,16 +388,54 @@ __declspec(dllexport) int win32_RegisterClassEx(lua_State *l)
 	wc.lpfnWndProc   = win32_DefWndProc;
 	wc.lpszClassName = luaL_checkstring(l, 1);
 	wc.style         = luaL_optinteger(l, 2, 0);
-	wc.cbClsExtra    = luaL_optinteger(l, 2, 0);
-	wc.cbWndExtra    = luaL_optinteger(l, 3, 0);
-	wc.hInstance     = luaL_optinteger(l, 4, 0);
-	wc.hIcon         = luaL_optinteger(l, 5, 0);
-	wc.hCursor       = luaL_optinteger(l, 6, 0);
-	wc.hbrBackground = luaL_optinteger(l, 7, 0);
-	wc.lpszMenuName  = luaL_optstring(l, 8, NULL);
-	wc.hIconSm       = luaL_optinteger(l, 9, 0);
+	wc.cbClsExtra    = luaL_optinteger(l, 3, 0);
+	wc.cbWndExtra    = luaL_optinteger(l, 4, 0);
+	wc.hInstance     = luaL_optinteger(l, 5, 0);
+	wc.hIcon         = luaL_optinteger(l, 6, 0);
+	wc.hCursor       = luaL_optinteger(l, 7, 0);
+	wc.hbrBackground = luaL_optinteger(l, 8, 0);
+	wc.lpszMenuName  = luaL_optstring(l, 9, NULL);
+	wc.hIconSm       = luaL_optinteger(l, 10, 0);
 
 	res = RegisterClassEx(&wc);
+	lua_pushinteger(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_SelectObject(lua_State *l)
+{
+	HDC hdc     = luaL_checkinteger(l, 1);
+	HGDIOBJ obj = luaL_checkinteger(l, 2);
+	HGDIOBJ res = SelectObject(hdc, obj);
+	lua_pushinteger(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_SendMessage(lua_State *l)
+{
+	HWND hwnd     = luaL_checkinteger(l, 1);
+	UINT msg      = luaL_checkinteger(l, 2);
+	WPARAM wparam = luaL_checkinteger(l, 3);
+	LPARAM lparam = luaL_checkinteger(l, 4);
+	LRESULT res   = SendMessage(hwnd, msg, wparam, lparam);
+	lua_pushinteger(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_SetBkColor(lua_State *l)
+{
+	HDC hdc      = luaL_checkinteger(l, 1);
+	COLORREF clr = luaL_checkinteger(l, 2);
+	COLORREF old = SetBkColor(hdc, clr);
+	lua_pushinteger(l, old);
+	return 1;
+}
+
+__declspec(dllexport) int win32_SetBkMode(lua_State *l)
+{
+	HDC hdc  = luaL_checkinteger(l, 1);
+	int mode = luaL_checkinteger(l, 2);
+	int res  = SetBkMode(hdc, mode);
 	lua_pushinteger(l, res);
 	return 1;
 }
@@ -305,6 +448,16 @@ __declspec(dllexport) int win32_SetMenu(lua_State *l)
 	lua_pushboolean(l, res);
 	return 1;
 }
+
+__declspec(dllexport) int win32_SetTextColor(lua_State *l)
+{
+	HDC hdc      = luaL_checkinteger(l, 1);
+	COLORREF clr = luaL_checkinteger(l, 2);
+	COLORREF res = SetTextColor(hdc, clr);
+	lua_pushinteger(l, res);
+	return 1;
+}
+
 __declspec(dllexport) int win32_ShowWindow(lua_State *l)
 {
 	HWND hwnd = luaL_checkinteger(l, 1);
@@ -334,3 +487,36 @@ __declspec(dllexport) int win32_UpdateWindow(lua_State *l)
 	return 1;
 }
 
+// HELPERS
+
+__declspec(dllexport) int win32_RGB(lua_State *l)
+{
+	int r = luaL_optinteger(l, 1, 0);
+	int g = luaL_optinteger(l, 2, 0);
+	int b = luaL_optinteger(l, 3, 0);
+	lua_pushinteger(l, RGB(r, g, b));
+	return 1;
+}
+
+__declspec(dllexport) int win32_RECT_new(lua_State *l)
+{
+	int left   = luaL_optinteger(l, 1, 0);
+	int top    = luaL_optinteger(l, 2, 0);
+	int right  = luaL_optinteger(l, 3, 0);
+	int bottom = luaL_optinteger(l, 4, 0);
+	RECT* lprc = (RECT*) lua_newuserdata(l, sizeof(RECT));
+	lprc->left = left;
+	lprc->top  = top;
+	lprc->right = right;
+	lprc->bottom = bottom;
+	return 1;
+}
+
+__declspec(dllexport) int win32_RECT_get(lua_State *l)
+{
+	int* lprc  = (int*) lua_touserdata(l, 1);
+	int idx    = luaL_checkinteger(l, 2);
+	int val    = lprc[idx];
+	lua_pushinteger(l, val);
+	return 1;
+}
