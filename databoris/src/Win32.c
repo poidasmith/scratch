@@ -487,6 +487,70 @@ __declspec(dllexport) int win32_UpdateWindow(lua_State *l)
 	return 1;
 }
 
+// WINSOCK
+
+__declspec(dllexport) int win32_accept(lua_State *l)
+{
+	SOCKET s = luaL_checkinteger(l, 1);
+	SOCKET a = accept(s, 0, 0);
+	lua_pushinteger(l, a);
+	return 1;
+}
+
+__declspec(dllexport) int win32_AcceptEx(lua_State *l)
+{
+	SOCKET sListenSocket = luaL_checkinteger(l, 1);
+	SOCKET sAcceptSocket = luaL_checkinteger(l, 2);
+	PVOID lpOutputBuffer = lua_touserdata(l, 3);
+	DWORD dwReceiveDataLength = luaL_checkinteger(l, 4);
+	DWORD dwLocalAddressLength = luaL_checkinteger(l, 5);
+	DWORD dwRemoteAddressLength = luaL_checkinteger(l, 6);
+	DWORD dwBytesReceived;
+	LPOVERLAPPED lpOverlapped = lua_touserdata(l, 7);
+	BOOL res = AcceptEx(sListenSocket, sAcceptSocket, lpOutputBuffer, dwReceiveDataLength, dwLocalAddressLength, dwRemoteAddressLength, &dwBytesReceived, lpOverlapped);
+	lua_pushboolean(l, res);
+	lua_pushinteger(l, dwBytesReceived);
+	return 2;
+}
+
+typedef struct {
+	int len;
+	struct sockaddr sa;
+} SOCKADDREX;
+
+__declspec(dllexport) int win32_bind(lua_State *l)
+{
+	SOCKET s = luaL_checkinteger(l, 1);
+	const SOCKADDREX* namex = lua_touserdata(l, 2);
+	int res = bind(s, &namex->sa, namex->len);
+	lua_pushinteger(l, 1);
+	return 1;
+}
+
+__declspec(dllexport) int win32_closesocket(lua_State *l)
+{
+	SOCKET s = luaL_checkinteger(l, 1);
+	int res = closesocket(s);
+	lua_pushinteger(l, res);
+	return 1;
+}
+
+__declspec(dllexport) int win32_connect(lua_State *l)
+{
+	SOCKET s = luaL_checkinteger(l, 1);
+	const SOCKADDREX* namex = lua_touserdata(l, 2);
+	int res = connect(s, &namex->sa, namex->len);
+	lua_pushinteger(l, 1);
+	return 1;
+}
+
+__declspec(dllexport) int win32_ConnectEx(lua_State *l)
+{
+	SOCKET s = luaL_checkinteger(l, 1);
+	const SOCKADDREX* namex = lua_touserdata(l, 2);
+	PVOID lpSendBuffer = lua_touserdata(l, 3);
+}
+
 // HELPERS
 
 __declspec(dllexport) int win32_RGB(lua_State *l)

@@ -30,7 +30,30 @@ function table.readonly(t)
 	return proxy
 end
 
-local test = require "ui2"
+function stringit(t) 
+	local res = ""
+	if type(t) == "table" then
+		local first = true
+		res = "{"
+		for i, v in pairs(t) do
+			local sep = ", "
+			if first then
+				sep = " "
+				first = false
+			end
+			res = res .. sep .. stringit(i) .. "=" .. stringit(v) 
+		end
+		res = res .. " }"
+	elseif type(t) == "string" then
+		res = string.format("%q", t)
+	else
+		res = tostring(t)		
+	end
+	return res
+end
+
+--local test = require "ui2"
+local test = require "ffi1"
 
 function dbos.main(...)
 	test(...)
