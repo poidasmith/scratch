@@ -58,10 +58,10 @@ local CS_HREDRAW = 0x2
 local function wnd_paint(hwnd, msg, wparam, lparam)	
 	local ps, hdc = win32.BeginPaint(hwnd)
 	local rect = win32.RECT()
-	--win32.GetClientRect(hwnd, rect)
+	win32.GetClientRect(hwnd, rect)
 	--log.println({top=rect.top, left=rect.left, right=rect.right, bottom=rect.bottom})
-	--local hbr = win32.GetStockObject(count % 5)
-	--win32.FillRect(hdc, rect, hbr)
+	local hbr = win32.GetStockObject(count % 5)
+	win32.FillRect(hdc, rect, hbr)
 	--local pen = win32.GetStockObject(BLACK_PEN)
 	--local font = win32.GetStockObject(OEM_FIXED_FONT)
 	--win32.SelectObject(pen)
@@ -84,7 +84,7 @@ local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 	local cursor = win32.LoadCursor(win32.IDC_ARROW)
 	local icon   = win32.LoadIcon(win32.IDI_APPLICATION)
 	local bg     = win32.GetStockObject(0)
-	win32.RegisterClassEx(clz, bitop.orr(CS_OWNDC, CS_VREDRAW, CS_HREDRAW), 0, 0, hInstance, icon, cursor, bg)
+	win32.RegisterClassEx(clz, bitop.orr(CS_VREDRAW, CS_HREDRAW), 0, 0, hInstance, icon, cursor, bg)
 	local hwnd = win32.CreateWindowEx( 
 		win32.WS_EX_WINDOWEDGE, 
 		clz, 
