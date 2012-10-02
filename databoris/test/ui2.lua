@@ -9,6 +9,14 @@ local SBARS_SIZEGRIP = 0x100
 
 local statusbar = 0
 
+local function trace(event, line)
+	local s = debug.getinfo(2)
+	if string.find(s.short_src, "ui2.lua") ~= nil then
+		log.println(line .. ": " .. stringit(s.name))
+	end
+end 
+debug.sethook(trace, "l")
+
 local function wnd_create(hwnd, msg, wparam, lparam)
 	local menu = win32.CreateMenu()
 	local file = win32.CreatePopupMenu()
@@ -68,7 +76,7 @@ local function wnd_paint(hwnd, msg, wparam, lparam)
 	--win32.SelectObject(font)
 	--win32.SetBkMode(hdc, OPAQUE)
 	--win32.SetBkColor(hdc, win32.RGB(255, 0, 0))
-	win32.SetTextColor(hdc, win32.RGB(255, 25, 2))
+	--win32.SetTextColor(hdc, win32.RGB(255, 25, 2))
 	win32.TextOut(hdc, 1, 1, "testing" .. count)
 	win32.EndPaint(hwnd, ps)
 end

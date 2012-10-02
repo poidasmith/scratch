@@ -162,15 +162,20 @@ local function trace(event, line)
 		println(line .. ": " .. stringit(s.name))
 	end
 end 
-debug.sethook(trace, "l")
+--debug.sethook(trace, "l")
+
+local NOT_HANDLED = 0xffffffff
 
 function map_wndproc(handlers)
 	return function(hwnd, msg, wparam, lparam)
 		local f = handlers[msg]
 		if f ~= nil then
-			return f(hwnd, msg, wparam, lparam) or false
+			handled, result = f(hwnd, msg, wparam, lparam)
+			if handled then
+				return result
+			end
 		end
-		return false
+		return NOT_HANDLED
 	end
 end
 
@@ -281,19 +286,18 @@ end
 local wnd_procs = {}
 
 local function DefWindowProc(hwnd, msg, wparam, lparam)
-	--println({hwnd, msg, wparam, lparam})
 	local handler = wnd_procs[hwnd]
-	local handled = false
-	local result  = 0
+	local result  = NOT_HANDLED
 	if msg == winnt.WM_NCCREATE and lparam ~= 0 then
 		local lpc = ffi.cast("CREATESTRUCTA*", lparam)
 		handler = ffi.cast("WNDPROC", lpc.lpCreateParams)
 		wnd_procs[hwnd] = handler 
 	end
 	if handler ~= nil then
-		handled, result = handler(hwnd, msg, wparam, lparam) 
+		result = handler(hwnd, msg, wparam, lparam) 
 	end
-	if handled == true then
+	--println({hwnd, msg, wparam, lparam, result=result})
+	if result ~= NOT_HANDLED then
 		return result or 0
 	end
 	return user32.DefWindowProcA(hwnd, msg, wparam, lparam)
@@ -318,6 +322,7 @@ local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 	clz.hCursor       = user32.LoadCursorA(hInstance, winnt.IDC_ARROW)
 	clz.hbrBackground = gdi32.GetStockObject(0)
 	clz.lpszClassName = clzName
+	println(clz.hCursor)
 	
 	local atom = user32.RegisterClassExA(clz)
 
@@ -333,8 +338,8 @@ local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 		[winnt.WM_SIZE]        = wnd_size
 	})
 
-	local cb   = ffi.cast("WNDPROC", wndproc)
-	local cbi  = ffi.cast("LPVOID", cb)
+	local cb  = ffi.cast("WNDPROC", wndproc)
+	local cbi = ffi.cast("LPVOID", cb)
 
 	local hwnd = user32.CreateWindowExA(
 		winnt.WS_EX_WINDOWEDGE,
