@@ -9,16 +9,18 @@ typedef long           LRESULT;
 typedef unsigned int   UINT;
 typedef unsigned int   UINT_PTR;
 typedef long           HANDLE;
-typedef long           HWND;
 typedef long           HBRUSH;
-typedef long           HMENU;
-typedef long           HINSTANCE;
-typedef long           HMODULE;
-typedef long           HGDIOBJ;
 typedef long           HCURSOR;
-typedef long           HICON;
 typedef long           HDC;
+typedef long           HFONT;
+typedef long           HGDIOBJ;
+typedef long           HICON;
+typedef long           HINSTANCE;
+typedef long           HMENU;
+typedef long           HMODULE;
+typedef long           HPEN;
 typedef long           HRGN;
+typedef long           HWND;
 typedef void*          LPVOID;
 typedef unsigned long  DWORD;
 typedef const char*    LPCSTR;
@@ -98,9 +100,25 @@ typedef struct tagCREATESTRUCTA {
     DWORD       dwExStyle;
 } CREATESTRUCTA;
 
+typedef struct _FILETIME {
+    DWORD dwLowDateTime;
+    DWORD dwHighDateTime;
+} FILETIME;
+
+typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
+  DWORD    dwFileAttributes;
+  FILETIME ftCreationTime;
+  FILETIME ftLastAccessTime;
+  FILETIME ftLastWriteTime;
+  DWORD    nFileSizeHigh;
+  DWORD    nFileSizeLow;
+} WIN32_FILE_ATTRIBUTE_DATA;
+
 BOOL     AppendMenuA(HMENU hMenu, DWORD uFlags, DWORD uIDNewItem, LPCSTR lpNewItem);
 HDC      BeginPaint(HMENU hWnd, PAINTSTRUCT *lpPaint);
+HFONT    CreateFontA(int nHeight, int nWidth, int nEscapement, int nOrientation, int fnWeight, DWORD fdwItalic, DWORD fdwUnderline, DWORD fdwStrikeOut, DWORD fdwCharSet, DWORD fdwOutputPrecision, DWORD fdwClipPrecision, DWORD fdwQuality, DWORD fdwPitchAndFamily, LPCSTR lpszFace);
 HMENU    CreateMenu();
+HPEN     CreatePen(int fnPenStyle, int nWidth, COLORREF crColor);
 HMENU    CreatePopupMenu();
 HWND     CreateStatusWindowA(LONG style, LPCSTR lpszText, HWND hwndParent, UINT wID);
 HBRUSH   CreateSolidBrush(COLORREF color);
@@ -118,6 +136,8 @@ COLORREF GetBkColor(HDC hdc);
 int      GetBkMode(HDC hdc);
 BOOL     GetClientRect(HWND hWnd, RECT* lpRect);
 DWORD    GetCurrentDirectoryA(DWORD nBufferLength, LPCSTR lpBuffer);
+DWORD    GetFileAttributesA(LPCSTR lpFileName);
+BOOL     GetFileAttributesExA(LPCSTR lpFileName, DWORD fInfoLevelId, WIN32_FILE_ATTRIBUTE_DATA* lpFileInformation);
 BOOL     GetMessageA(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
 DWORD    GetModuleFileNameA(HMODULE hModule, LPCSTR lpFilename, DWORD nSize);
 HGDIOBJ  GetStockObject(int i);
@@ -128,6 +148,7 @@ HCURSOR  LoadCursorA(HINSTANCE hInstance, WORD lpCursorName);
 HICON    LoadIconA(HINSTANCE hInstance, WORD lpIconName);
 int      MessageBoxA(HANDLE hwnd, LPCSTR txt, LPCSTR cap, DWORD type);
 void     OutputDebugStringA(LPCSTR lpOutputString);
+BOOL     Polyline(HDC hdc, const POINT *lppt, int cPoints);
 BOOL     PostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 void     PostQuitMessage(int nExitCode);
 BOOL     Rectangle(HDC hdc, int left, int top, int right, int bottom);
@@ -137,8 +158,10 @@ HGDIOBJ  SelectObject(HDC hdc, HGDIOBJ h);
 LRESULT  SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 COLORREF SetBkColor(HDC hdc, COLORREF color);
 int      SetBkMode(HDC hdc, int mode);
+BOOL     SetForegroundWindow(HWND hWnd);
 BOOL     SetMenu(HWND hWnd, HMENU hMenu);
 COLORREF SetTextColor(HDC hdc, COLORREF color);
+UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, UINT_PTR lpTimerFunc);
 BOOL     ShowWindow(HWND hWnd, int nCmdShow);
 BOOL     TextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c);
 BOOL     TranslateMessage(const MSG *lpMsg);
@@ -166,6 +189,8 @@ winnt.WM_MOUSEWHEEL       = 0x020A
 winnt.WM_ERASEBKGND		  = 0x0014
 winnt.WM_PAINT            = 0x000F
 winnt.WM_SIZE             = 0x0005
+winnt.WM_TIMER            = 0x0113
+winnt.WM_KEYDOWN          = 0x0100
 
 -- icons
 winnt.IDI_APPLICATION = 32512
@@ -182,6 +207,21 @@ winnt.MF_STRING = 0x00
 winnt.MF_POPUP  = 0x10
 
 winnt.RDW_INVALIDATE = 0x1
+
+-- bk mode
+winnt.TRANSPARENT = 1
+winnt.OPAQUE      = 2
+
+winnt.PS_SOLID = 0
+
+winnt.VK_RIGHT = 0x27
+winnt.VK_NEXT  = 0x22
+winnt.VK_END   = 0x23
+winnt.VK_HOME  = 0x24
+winnt.VK_LEFT  = 0x25
+winnt.VK_UP    = 0x26
+winnt.VK_RIGHT = 0x27
+winnt.VK_DOWN  = 0x28
 
 return winnt
 

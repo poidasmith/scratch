@@ -37,11 +37,35 @@ function stringit(t)
 	return res
 end
 
+local ffi = require("ffi")
+local winnt = require("winnt")
+local kernel32 = ffi.load("kernel32")
+
+local function println(o)
+	kernel32.OutputDebugStringA(stringit(o) .. "\n")
+end
+
+local function trace(event, line)
+	local s = debug.getinfo(2)
+	--if string.find(s.short_src, "ffi1.lua") ~= nil then
+		println(line .. ": " .. stringit(s.name))
+	--end
+end 
+--debug.sethook(trace, "l")
+
 --local test = require "ui2"
-local test = require "ffi1"
+local function dofile(filename)
+	local f = io.open(filename, "r")
+	f = loadstring(f:read("*a"))
+	return f()
+end 
 
 function main(...)
-	test(...)
+	local res = 0
+	repeat
+		res = dofile("../test/ffi1.lua")
+		res = res(...)
+	until res ~= 100
 end
 
 return main
