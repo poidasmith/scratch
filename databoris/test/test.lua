@@ -41,7 +41,7 @@ local ffi = require("ffi")
 local winnt = require("winnt")
 local kernel32 = ffi.load("kernel32")
 
-local function println(o)
+function println(o)
 	kernel32.OutputDebugStringA(stringit(o) .. "\n")
 end
 
@@ -57,15 +57,22 @@ end
 local function dofile(filename)
 	local f = io.open(filename, "r")
 	f = loadstring(f:read("*a"))
-	return f()
+	println(f)
+	return pcall(f)
 end 
 
 function main(...)
 	local res = 0
 	repeat
-		res = dofile("../test/ffi1.lua")
-		res = res(...)
-	until res ~= 100
+		--res = dofile("../test/ffi1.lua")
+		iserr, res = dofile("../test/sock1.lua")
+		if type(res) == "function" then
+			iserr, res = pcall(res, ...)
+		else
+			println(res)
+		end
+	until iserr or res ~= 100
+	println(res)
 end
 
 return main

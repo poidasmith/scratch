@@ -60,3 +60,4 @@ __declspec(dllexport) int bit_hiword(lua_State *l)
 	lua_pushinteger(l, HIWORD(luaL_optinteger(l, 1, 0)));
 	return 1;
 }
+

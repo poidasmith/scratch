@@ -70,12 +70,12 @@ local SBARS_SIZEGRIP = 0x100
 local statusbar = 0
 
 local function wnd_create(hwnd, msg, wparam, lparam)
-	local menu = user32.CreateMenu()
-	local file = user32.CreatePopupMenu()
-	user32.AppendMenuA(file, winnt.MF_STRING, ID_FILE_EXIT, "E&xit")
-	user32.AppendMenuA(menu, bit.bor(winnt.MF_STRING, winnt.MF_POPUP), file, "&File")
-	user32.SetMenu(hwnd, menu)
-	statusbar = comctl32.CreateStatusWindowA(0x50000000, "Ready", hwnd, ID_STATUS_BAR)
+	--local menu = user32.CreateMenu()
+	--local file = user32.CreatePopupMenu()
+	--user32.AppendMenuA(file, winnt.MF_STRING, ID_FILE_EXIT, "E&xit")
+	--user32.AppendMenuA(menu, bit.bor(winnt.MF_STRING, winnt.MF_POPUP), file, "&File")
+	--user32.SetMenu(hwnd, menu)
+	--statusbar = comctl32.CreateStatusWindowA(0x50000000, "Ready", hwnd, ID_STATUS_BAR)
 	user32.SetTimer(hwnd, 100, 1000, 0)
 end
 
@@ -116,15 +116,6 @@ local CS_OWNDC = 0x20
 local CS_VREDRAW = 0x1
 local CS_HREDRAW = 0x2
 
-local t = {
-	test = "asdf",
-	over = 123,
-	becasue = {134.44},
-	123,
-	34,
-	45
-}
-
 local font = gdi32.CreateFontA(14, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "Bitstream Vera Sans Mono")
 local penBox = gdi32.CreatePen(winnt.PS_SOLID, 1, 0x00505050)
 local penSep = gdi32.CreatePen(winnt.PS_SOLID, 1, 0x00454545)
@@ -132,53 +123,123 @@ local hbrBac = gdi32.CreateSolidBrush(0x00282828)
 local hbrSel = gdi32.CreateSolidBrush(0x00404040)
 local hbrSer = gdi32.CreateSolidBrush(0x00303030)
 
+local t = {
+	test = "asdf",
+	over = 123,
+	because = {134.44},
+	123,
+	34,
+	45,
+	asdf = "asdf",
+	"asdf",
+	{123},
+	true,
+	false,
+}
+
+t.lenn = #t
+
+local table_view = {
+	table   = t,
+	height  = 1000,
+	columns = {
+		{ attr  = "__key",   width = 100 },		
+		{ attr  = "__type",	 width = 100 },		
+		{ attr  = "__value", width = 100 },		
+		{ attr  = "1",       width = 100 },
+	},
+	rows = {
+		{
+			height = 800,
+			views = { 
+				{ height = 18,  attr = "buffers" },
+				{ height = 600, type = "ipairs" },
+				{ height = 18,  attr = "tester" },
+				{ height = 80,  type = "apairs", except = {"buffers", "tester"} },
+			},
+		},
+	}
+}
+
 local celx = 0
 local cely = 0
 
+local function draw_selection(hdc, x, y, width, height, selection)
+end
+
+-- use # for num, " for str, & for bool, {} for table 
+local function draw_type(hdc, value, x, y, width, height, selection)
+end
+
+
+local function draw_cell(hdc, value, x, y, width, height, selection)
+	draw_selection(hdc, x, y, width, height)
+	
+end
+
+local function draw_row(hdc, table, key, value, columns, y, height, )
+	local x_offset = 0
+	for ci, cv in pairs(columns) do
+		
+	end
+	
+	gdi32.TextOutA(hdc, 2, offset, i, #i)
+	gdi32.TextOutA(hdc, 100, offset, tv, #tv) 
+	gdi32.TextOutA(hdc, 200, offset, v, #v) 
+	offset = offset + 18
+	local pts = ffi.new("POINT[2]", {{x=1,y=offset-3}, {x=298,y=offset-3}})
+	gdi32.SelectObject(hdc, penBox)
+	gdi32.Polyline(hdc, pts, 2)
+	gdi32.SelectObject(hdc, penSep)
+	pts = ffi.new("POINT[2]", {{x=97,y=offset-20}, {x=97,y=offset-3}})
+	gdi32.Polyline(hdc, pts, 2)
+	pts = ffi.new("POINT[2]", {{x=197,y=offset-20}, {x=197,y=offset-3}})
+	gdi32.Polyline(hdc, pts, 2)
+	pts = ffi.new("POINT[2]", {{x=297,y=offset-20}, {x=297,y=offset-3}})
+	gdi32.Polyline(hdc, pts, 2)
+	
+end
+
 local function wnd_paint(hwnd, msg, wparam, lparam)	
-	local ps = ffi.new("PAINTSTRUCT")
+	local ps = nil
 	local hdc = wparam
 	if hdc == 0 then
+		ps = ffi.new("PAINTSTRUCT")
 		hdc = user32.BeginPaint(hwnd, ps)
 	end
+	
+	-- draw background
 	gdi32.SetBkMode(hdc, winnt.TRANSPARENT);
-	gdi32.SetTextColor(hdc, 0x00808080)	
-	gdi32.SelectObject(hdc, font)
 	local rect = ffi.new("RECT")
 	user32.GetClientRect(hwnd, rect)
 	user32.FillRect(hdc, rect, hbrBac)
-	local offset = 1
+
 	local sely = 18*(cely%6)-1
 	local selx = 100*(celx%3)-3
+	
+	-- draw selection
 	rect = ffi.new("RECT", {left=1, right=297, top=sely, bottom=sely+18})
 	user32.FillRect(hdc, rect, hbrSer)
 	rect = ffi.new("RECT", {left=selx, right=selx+100, top=sely, bottom=sely+18})
 	user32.FillRect(hdc, rect, hbrSel)
-	for i, v in pairs(t) do
-		i = stringit(i)
-		tv = type(v)
-		v = stringit(v)
-		gdi32.TextOutA(hdc, 2, offset, i, #i)
-		gdi32.TextOutA(hdc, 100, offset, tv, #tv) 
-		gdi32.TextOutA(hdc, 200, offset, v, #v) 
+	
+	-- setup font
+	gdi32.SetTextColor(hdc, 0x00808080)	
+	gdi32.SelectObject(hdc, font)
+
+	-- draw cells
+	local offset = 1
+	for k, v in pairs(t) do
+		draw_row(hdc, t, k, v, table_view.columns, offset, 18)
 		offset = offset + 18
-		local pts = ffi.new("POINT[2]", {{x=1,y=offset-3}, {x=298,y=offset-3}})
-		gdi32.SelectObject(hdc, penBox)
-		gdi32.Polyline(hdc, pts, 2)
-		gdi32.SelectObject(hdc, penSep)
-		pts = ffi.new("POINT[2]", {{x=97,y=offset-20}, {x=97,y=offset-3}})
-		gdi32.Polyline(hdc, pts, 2)
-		pts = ffi.new("POINT[2]", {{x=197,y=offset-20}, {x=197,y=offset-3}})
-		gdi32.Polyline(hdc, pts, 2)
-		pts = ffi.new("POINT[2]", {{x=297,y=offset-20}, {x=297,y=offset-3}})
-		gdi32.Polyline(hdc, pts, 2)
 	end	
-	user32.EndPaint(hwnd, ps)
+	
+	if wparam == 0 then
+		user32.EndPaint(hwnd, ps)
+	end
 end
 
 local function wnd_keydown(hwnd, msg, wparam, lparam)
-	println("key")
-	println(wparam)
 	if wparam == winnt.VK_RIGHT then
 		celx = celx + 1
 		user32.RedrawWindow(hwnd, nil, 0, winnt.RDW_INVALIDATE)
@@ -256,10 +317,10 @@ local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 		clzName,
 		"The title of my window",
 		winnt.WS_OVERLAPPEDWINDOW,
-		100,
-		100,
-		940,
-		820,
+		600,
+		600,
+		500,
+		300,
 		0, 
 		0,
 		hInstance,
