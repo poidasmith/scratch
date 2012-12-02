@@ -177,7 +177,7 @@ local function draw_cell(hdc, value, x, y, width, height, selection)
 	
 end
 
-local function draw_row(hdc, table, key, value, columns, y, height, )
+local function draw_row(hdc, table, key, value, columns, y, height)
 	local x_offset = 0
 	for ci, cv in pairs(columns) do
 		

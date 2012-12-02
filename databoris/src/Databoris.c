@@ -95,10 +95,40 @@ int dbos_GetProcAddress(lua_State *l)
 	return 1;
 }
 
+/*
+ * Used to load lua scripts that embedded inside this binary (our bootstrap library)
+ */
+int dbos_link(lua_State *l)
+{
+	int s = 1, res;
+	HRSRC hi;
+	char *script, *err;
+
+	HINSTANCE hInstance = GetModuleHandle(NULL);
+
+	// Get resource id
+	res = luaL_checkinteger(l, 1);
+
+	// TODO: check for cached script in registry
+
+	// Load and execute script
+	hi = FindResource(hInstance, MAKEINTRESOURCE(1), MAKEINTRESOURCE(res));
+	if(hi)	{
+		HGLOBAL hg = LoadResource(hInstance, hi);
+		PBYTE pb = (PBYTE) LockResource(hg);
+		DWORD* pd = (DWORD*) pb;
+		script = *pd == INI_RES_MAGIC ? (char *) &pb[RES_MAGIC_SIZE] : (char *) pb;
+		s = luaL_loadstring(l, script);	
+	}
+
+	return 1;
+}
+
 void dbos_openlib(lua_State *l)
 {
 	static const luaL_reg fns[] = 
 	{
+		{ "link",           dbos_link        },
 		{ "encode",         dbos_encode      },
 		{ "decode",         dbos_decode      },
 		{ "debug_print",    dbos_debug_print },

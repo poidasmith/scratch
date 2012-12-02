@@ -7,19 +7,19 @@ ffi.cdef[[
 	typedef unsigned short  u_short;
 	typedef unsigned int    u_int;
 	typedef unsigned long   u_long;
-	typedef UINT_PTR SOCKET;
+	typedef u_int* SOCKET;
 	typedef struct fd_set {
 		u_int   fd_count;
 		SOCKET  fd_array[64];
 	} fd_set;
 	typedef struct WSAData {
-	        WORD                    wVersion;
-	        WORD                    wHighVersion;
-	        char                    szDescription[257];
-	        char                    szSystemStatus[129];
-	        unsigned short          iMaxSockets;
-	        unsigned short          iMaxUdpDg;
-	        char *                  lpVendorInfo;
+	        WORD    wVersion;
+	        WORD    wHighVersion;
+	        char    szDescription[257];
+	        char    szSystemStatus[129];
+	        u_short iMaxSockets;
+	        u_short iMaxUdpDg;
+	        char *  lpVendorInfo;
 	} WSADATA;
 	SOCKET accept(SOCKET s,struct sockaddr *addr, int *addrlen);	
 	int bind(SOCKET s, const struct sockaddr *name, int namelen);
@@ -44,4 +44,13 @@ ffi.cdef[[
 	int WSAStartup(WORD wVersionRequested, WSADATA* lpWSAData);
 ]]
 
-return {}
+local wsaData = ffi.new("WSADATA")
+local winsock = ffi.load("ws2_32")
+
+-- Init the library
+winsock.WSAStartup(0x22, wsaData);
+print(wsaData.wVersion)
+print(wsaData.wHighVersion)
+print(wsaData.szDescription)
+
+return winsock 
