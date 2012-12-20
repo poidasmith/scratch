@@ -1,23 +1,42 @@
 
--- stream impl (files and sockets)
+local ffi = require("ffi")
 
-local function read_num(self)
-	local d = self:read_buf(8)	
-end
+ffi.cdef[[
+HANDLE WINAPI CreateFile(LPCTSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode,
+                         LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
+                         DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+]]
 
-local function read_bool(self)
-end
-
-local function read_buf(self, len)
-end
-
-local function big_endian(self)
-	self.big_endian = false
-end
-
-local lib = {
-	big_endian    = function(self) self.big_endian = true end,
-	little_endian = function(self) self.big_endian = false end,
+-- base class implements stream methods
+local stream = {
+	big_endian = false
 }
 
-return lib
+function stream:new(o) -- standard constructor
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	return o
+end
+
+function stream:read_word()
+	local str = self.read(2)
+end
+
+function stream:read_dword()
+	local str = self.read(4)
+end
+
+-- file-based stream
+local file_stream = stream:new()
+
+function file_stream:open(filename, mode)
+end
+
+function file_stream:read(len)
+	
+end
+
+return {
+	file = file_stream
+}
