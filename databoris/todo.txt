@@ -87,3 +87,9 @@ false=0x2
 === caching?
 	
  - can this code be on the server?
+
+=== deployment
+
+- can we use the name of the executable as a lookup into a script/config
+  on the sourcedb. 
+ 
