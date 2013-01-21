@@ -17,6 +17,62 @@ string  | x x 0 0  1 0 1 0 | len (num bytes)   | len bytes |
         +--------------------------------------------------+
 --]]
 
+local ffi      = require("ffi")
+local kernel32 = ffi.load("kernel32")
+local wsock    = ffi.load("ws2_32")
+
+ffi.cdef[[
+typedef long           HANDLE;
+typedef int            BOOL;
+typedef unsigned long  DWORD;
+typedef unsigned long* LPDWORD;
+typedef void*          LPVOID;
+typedef void*          LPCVOID;
+typedef void*          LPSECURITY_ATTRIBUTES;
+typedef void*          LPOVERLAPPED;
+typedef const char*    LPCTSTR;
+typedef unsigned int   SOCKET;   
+
+HANDLE CreateFileA(
+	LPCTSTR lpFileName, 
+    DWORD dwDesiredAccess, 
+    DWORD dwShareMode,
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes, 
+    DWORD dwCreationDisposition,
+    DWORD dwFlagsAndAttributes, 
+    HANDLE hTemplateFile
+);
+BOOL ReadFile(
+	HANDLE hFile, 
+	LPVOID lpBuffer, 
+	DWORD nNumberOfBytesToRead, 
+	LPDWORD lpNumberOfBytesRead, 
+	LPOVERLAPPED lpOverlapped
+);                      
+BOOL WriteFile(
+	HANDLE hFile,
+	const char* lpBuffer,
+	DWORD nNumberOfBytesToWrite,
+	LPDWORD lpNumberOfBytesWritten,
+	LPOVERLAPPED lpOverlapped
+);
+BOOL CloseHandle(
+	HANDLE hObject
+);
+int send(
+  SOCKET s,
+  const char *buf,
+  int len,
+  int flags
+);
+int recv(
+  SOCKET s,
+  char *buf,
+  int len,
+  int flags
+);
+]]
+
 function hexdump(buf)
 	for i=1,math.ceil(#buf/16) * 16 do
     	if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
@@ -55,49 +111,6 @@ function stringit(t)
 	end
 	return res
 end
-
-
-local ffi      = require("ffi")
-local kernel32 = ffi.load("kernel32")
-
-ffi.cdef[[
-typedef long           HANDLE;
-typedef int            BOOL;
-typedef unsigned long  DWORD;
-typedef unsigned long* LPDWORD;
-typedef void*          LPVOID;
-typedef void*          LPCVOID;
-typedef void*          LPSECURITY_ATTRIBUTES;
-typedef void*          LPOVERLAPPED;
-typedef const char*    LPCTSTR;
-
-HANDLE CreateFileA(
-	LPCTSTR lpFileName, 
-    DWORD dwDesiredAccess, 
-    DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes, 
-    DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes, 
-    HANDLE hTemplateFile
-);
-BOOL ReadFile(
-	HANDLE hFile, 
-	LPVOID lpBuffer, 
-	DWORD nNumberOfBytesToRead, 
-	LPDWORD lpNumberOfBytesRead, 
-	LPOVERLAPPED lpOverlapped
-);                      
-BOOL WriteFile(
-	HANDLE hFile,
-	const char* lpBuffer,
-	DWORD nNumberOfBytesToWrite,
-	LPDWORD lpNumberOfBytesWritten,
-	LPOVERLAPPED lpOverlapped
-);
-BOOL CloseHandle(
-	HANDLE hObject
-);
-]]
 
 local win = {
 	GENERIC_READ    = 0x80000000,
@@ -259,7 +272,7 @@ end
 
 local file_stream = stream:new()
 
-function file_stream:new_(filename, access, create_disp, o)
+function file_stream:new(filename, access, create_disp, o)
 	local o = o or {}
 	o.handle = kernel32.CreateFileA(
 		filename, 
@@ -272,17 +285,17 @@ function file_stream:new_(filename, access, create_disp, o)
 	)
 	if not o.handle then error("unable to create file") end
 	o.num_ = ffi.new("DWORD[1]")	
-	return self:new(o)	
+	return stream.new(self, o)	
 end
 
 function file_stream:new_writer(filename, o)
-	return self:new_(filename, win.GENERIC_WRITE, win.CREATE_ALWAYS, o)
+	return self:new(filename, win.GENERIC_WRITE, win.CREATE_ALWAYS, o)
 end
 
 function file_stream:new_reader(filename, o)
 	local o = o or {}
 	o.buf_ = ffi.new("char[4096]")
-	return self:new_(filename, win.GENERIC_READ, win.OPEN_EXISTING, o)
+	return self:new(filename, win.GENERIC_READ, win.OPEN_EXISTING, o)
 end
 
 function file_stream:write_internal(str)	
@@ -315,8 +328,41 @@ function file_stream:close()
 	kernel32.CloseHandle(self.handle)
 end
 
+local socket_stream = stream:new()
+
+function socket_stream:new(socket)
+	local o = o or {}
+	o.socket = socket
+	o.buf_ = ffi.new("char[4096]")	
+	return stream.new(self, o)		
+end
+
+function socket_stream:write_internal(str)	
+	hexdump(str)
+	wsock.send(self.socket, str, #str, 0) -- TODO: check result
+end
+
+-- TODO: refactor/merge this into file_stream:read_internal
+function socket_stream:read_internal(len)
+	local left = len
+	local parts = {}
+	local nump = 0
+	while left > 0 do
+		local read = wsock.recv(self.socket, self.buf_, left, 0)
+		left = left - read
+		parts[#parts + 1] = ffi.string(self.buf_, read)
+		nump = nump + 1
+	end
+	if nump == 1 then
+		hexdump(parts[1])
+		return parts[1]
+	end
+	return table.concat(parts)
+end
+
 return {
-	file = file_stream
+	file   = file_stream,
+	socket = socket_stream,
 }
 
 
