@@ -32,6 +32,7 @@ typedef void*          LPSECURITY_ATTRIBUTES;
 typedef void*          LPOVERLAPPED;
 typedef const char*    LPCTSTR;
 typedef unsigned int   SOCKET;   
+typedef unsigned short ushort;   
 
 HANDLE CreateFileA(
 	LPCTSTR lpFileName, 
@@ -71,8 +72,23 @@ int recv(
   int len,
   int flags
 );
+SOCKET socket(
+  int af,
+  int type,
+  int protocol
+);
+struct sockaddr {
+        ushort  sa_family;
+        char    sa_data[14];
+};
+int bind(
+  SOCKET s,
+  const struct sockaddr *name,
+  int namelen
+);
 ]]
 
+-- borrowed from http://lua-users.org/wiki/HexDump
 function hexdump(buf)
 	for i=1,math.ceil(#buf/16) * 16 do
     	if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
@@ -124,7 +140,14 @@ local win = {
 	OPEN_EXISTING     = 3,
 	TRUNCATE_EXISTING = 5,
 	
-	FILE_ATTRIBUTE_NORMAL = 0x80
+	FILE_ATTRIBUTE_NORMAL = 0x80,
+	
+	AF_INET     = 2,
+	AF_INET6    = 23,
+	SOCK_STREAM = 1,
+	SOCK_DGRAM  = 2,
+	SOCK_RAW    = 3,
+	IPPROTO_TCP = 6
 }
 
 local stream = {}
@@ -358,6 +381,24 @@ function socket_stream:read_internal(len)
 		return parts[1]
 	end
 	return table.concat(parts)
+end
+
+function socket_stream.connect(host, port)
+	local wsaData = ffi.new("WSADATA")
+	local iResult = wsock.WSASTartup(win.MAKEWORD(2,2), wsaData)
+	if iResult ~= win.NO_ERROR then
+		error("WSAStartup function failed with error: %d\n":format(iResult))
+	end
+	local socket = wsock.socket(win.AF_NET, win.SOCK_STREAM, win.IPPROTO_TCP)
+	if socket == win.INVALID_SOCKET then
+	end
+	
+	-- etc...
+	
+	return socket_stream:new(socket)
+end
+
+function socket_stream.select(reads, writes, excepts)
 end
 
 return {
