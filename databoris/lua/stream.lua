@@ -25,6 +25,7 @@ ffi.cdef[[
 typedef long           HANDLE;
 typedef int            BOOL;
 typedef unsigned long  DWORD;
+typedef unsigned long  ULONG;
 typedef unsigned long* LPDWORD;
 typedef void*          LPVOID;
 typedef void*          LPCVOID;
@@ -33,6 +34,9 @@ typedef void*          LPOVERLAPPED;
 typedef const char*    LPCTSTR;
 typedef unsigned int   SOCKET;   
 typedef unsigned short ushort;   
+typedef unsigned short WORD;
+typedef unsigned char  UCHAR;
+typedef unsigned short USHORT;   
 
 HANDLE CreateFileA(
 	LPCTSTR lpFileName, 
@@ -60,6 +64,19 @@ BOOL WriteFile(
 BOOL CloseHandle(
 	HANDLE hObject
 );
+typedef struct WSAData {
+  WORD wVersion;
+  WORD wHighVersion;
+  char szDescription[257];
+  char szSystemStatus[129];
+  unsigned short iMaxSockets;
+  unsigned short iMaxUdpDg;
+  char* lpVendorInfo;
+} WSADATA;
+int WSAStartup(
+  WORD wVersionRequested,
+  WSADATA* lpWSAData
+);
 int send(
   SOCKET s,
   const char *buf,
@@ -68,7 +85,7 @@ int send(
 );
 int recv(
   SOCKET s,
-  char *buf,
+  char* buf,
   int len,
   int flags
 );
@@ -81,11 +98,27 @@ struct sockaddr {
         ushort  sa_family;
         char    sa_data[14];
 };
+int connect(
+  SOCKET s,
+  const struct sockaddr *name,
+  int namelen
+);
 int bind(
   SOCKET s,
   const struct sockaddr *name,
   int namelen
 );
+typedef struct in_addr {
+    ULONG S_addr;
+} in_addr;
+typedef struct sockaddr_in {
+  short  sin_family;
+  ushort sin_port;
+  struct in_addr sin_addr;
+  char   sin_zero[8];
+} sockaddr_in;
+unsigned long inet_addr(const char* cp);
+ushort htons(ushort hostshort);
 ]]
 
 -- borrowed from http://lua-users.org/wiki/HexDump
@@ -128,7 +161,24 @@ function stringit(t)
 	return res
 end
 
-local win = {
+function error_format(...)
+	return error(string.format(...))
+end
+
+function table.strict(t)
+	local mt = {
+		__index = function(k) 
+			if type(k) == "string" then
+				error_format("%s not defined for table", k)
+			end
+		end
+	}
+	setmetatable(t, mt)
+	return t
+end
+
+-- TODO: wrap in table.strict (to catch refs to undefineds)
+local win = table.strict{
 	GENERIC_READ    = 0x80000000,
 	GENERIC_WRITE   = 0x40000000, 
 	GENERIC_EXECUTE = 0x20000000,
@@ -147,7 +197,13 @@ local win = {
 	SOCK_STREAM = 1,
 	SOCK_DGRAM  = 2,
 	SOCK_RAW    = 3,
-	IPPROTO_TCP = 6
+	IPPROTO_TCP = 6,
+	
+	NO_ERROR = 0,
+	
+	MAKEWORD = function(a, b)
+		return bit.bor(bit.band(a, 0xff), bit.lshift(bit.band(b, 0xff), 8))
+	end
 }
 
 local stream = {}
@@ -351,7 +407,7 @@ function file_stream:close()
 	kernel32.CloseHandle(self.handle)
 end
 
-local socket_stream = stream:new()
+local socket_stream = stream:new{ init = false }
 
 function socket_stream:new(socket)
 	local o = o or {}
@@ -383,19 +439,69 @@ function socket_stream:read_internal(len)
 	return table.concat(parts)
 end
 
-function socket_stream.connect(host, port)
+function socket_stream.startup()
+	if socket_stream.init then return end
+	
 	local wsaData = ffi.new("WSADATA")
-	local iResult = wsock.WSASTartup(win.MAKEWORD(2,2), wsaData)
-	if iResult ~= win.NO_ERROR then
-		error("WSAStartup function failed with error: %d\n":format(iResult))
-	end
-	local socket = wsock.socket(win.AF_NET, win.SOCK_STREAM, win.IPPROTO_TCP)
+	
+	local result = wsock.WSAStartup(win.MAKEWORD(2,2), wsaData)
+	if result ~= win.NO_ERROR then
+		error_format("WSAStartup function failed with error: %d\n", result)
+	end	
+end
+
+function socket_stream.socket_service_size(host, port)
+	local socket = wsock.socket(win.AF_INET, win.SOCK_STREAM, win.IPPROTO_TCP)
 	if socket == win.INVALID_SOCKET then
+		error("something wrong socket")
 	end
 	
-	-- etc...
+	local service = ffi.new("struct sockaddr_in[1]")
+	service[1].sin_family = win.AF_INET;
+	service[1].sin_addr.S_addr = wsock.inet_addr(host)
+	service[1].sin_port = wsock.htons(port)
 	
-	return socket_stream:new(socket)
+	return socket, service, ffi.sizeof("sockaddr_in")
+end
+
+function socket_stream.connect(host, port)
+	socket_stream.startup()
+	
+	local raw_socket, service, size = socket_stream.socket_service_size(host, port)
+	
+	result = wsock.connect(raw_socket, ffi.cast("const struct sockaddr*", service), size)
+	if result == win.SOCKET_ERROR then
+		error("something about the socket")
+	end
+	
+	return socket_stream:new(raw_socket)
+end
+
+function socket_stream.bind(port, host)
+	socket_stream.startup()
+	
+	local host = host or "127.0.0.1"
+	local raw_socket, service, size = socket_stream.socket_service_size(host, port)
+	
+	local result = wsock.bind(socket, service, size)
+	if result == win.SOCKET_ERROR then
+		error("something about the socket")
+	end
+	
+	return raw_socket
+end
+
+function socket_stream.listen(raw_socket, backlog)
+	return wsock.listen(raw_socket, backlog or win.SOMAXCONN)
+end	
+
+function socket_stream.accept(raw_socket)
+	local addr = ffi.new("sockaddr")
+	local len = ffi.new("int[1]")
+	
+	local raw_socket = wsock.accept(raw_socket, addr, len)
+	
+	return raw_socket, addr, len 
 end
 
 function socket_stream.select(reads, writes, excepts)
