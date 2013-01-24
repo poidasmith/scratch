@@ -77,6 +77,7 @@ int WSAStartup(
   WORD wVersionRequested,
   WSADATA* lpWSAData
 );
+int WSAGetLastError();
 int send(
   SOCKET s,
   const char *buf,
@@ -108,8 +109,21 @@ int bind(
   const struct sockaddr *name,
   int namelen
 );
+int listen(
+  SOCKET s,
+  int backlog
+);
+SOCKET accept(
+  SOCKET s,
+  struct sockaddr *addr,
+  int *addrlen
+);
 typedef struct in_addr {
-    ULONG S_addr;
+    union {
+                struct { UCHAR s_b1,s_b2,s_b3,s_b4; } S_un_b;
+                struct { USHORT s_w1,s_w2; } S_un_w;
+                ULONG S_addr;
+        } S_un;
 } in_addr;
 typedef struct sockaddr_in {
   short  sin_family;
@@ -124,8 +138,8 @@ ushort htons(ushort hostshort);
 -- borrowed from http://lua-users.org/wiki/HexDump
 function hexdump(buf)
 	for i=1,math.ceil(#buf/16) * 16 do
-    	if (i-1) % 16 == 0 then io.write(string.format('%08X  ', i-1)) end
- 		io.write( i > #buf and '   ' or string.format('%02X ', buf:byte(i)) )
+    	if (i-1) % 16 == 0 then io.write(string.format('%08x  ', i-1)) end
+ 		io.write( i > #buf and '   ' or string.format('%02x ', buf:byte(i)) )
  		if i %  8 == 0 then io.write(' ') end
  		if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('%c','.'), '\n' ) end
     end
@@ -161,23 +175,27 @@ function stringit(t)
 	return res
 end
 
+function printf(...)
+	print(string.format(...))
+end
+
 function error_format(...)
 	return error(string.format(...))
 end
 
 function table.strict(t)
 	local mt = {
-		__index = function(k) 
-			if type(k) == "string" then
-				error_format("%s not defined for table", k)
+		__index = function(table, key)
+			if type(key) == "string" then
+				error_format("%s not defined for table", key)
 			end
+			return table[key]
 		end
 	}
 	setmetatable(t, mt)
 	return t
 end
 
--- TODO: wrap in table.strict (to catch refs to undefineds)
 local win = table.strict{
 	GENERIC_READ    = 0x80000000,
 	GENERIC_WRITE   = 0x40000000, 
@@ -200,6 +218,10 @@ local win = table.strict{
 	IPPROTO_TCP = 6,
 	
 	NO_ERROR = 0,
+	INVALID_SOCKET = 0,
+	SOCKET_ERROR = -1,
+	
+	SOMAXCONN = 5,
 	
 	MAKEWORD = function(a, b)
 		return bit.bor(bit.band(a, 0xff), bit.lshift(bit.band(b, 0xff), 8))
@@ -386,7 +408,7 @@ function file_stream:read_internal(len)
 	local left = len
 	local parts = {}
 	local nump = 0
-	while left > 0 do
+	while left > 0 do		
 		if not kernel32.ReadFile(self.handle, self.buf_, left, self.num_, nil) then
 			error("error reading file stream")
 		end
@@ -396,7 +418,7 @@ function file_stream:read_internal(len)
 		nump = nump + 1
 	end
 	if nump == 1 then -- should be pretty common, avoids table concat
-		hexdump(parts[1])
+		--hexdump(parts[1])
 		return parts[1]
 	end
 	return table.concat(parts)
@@ -417,23 +439,28 @@ function socket_stream:new(socket)
 end
 
 function socket_stream:write_internal(str)	
-	hexdump(str)
+	--hexdump(str)
 	wsock.send(self.socket, str, #str, 0) -- TODO: check result
 end
 
 -- TODO: refactor/merge this into file_stream:read_internal
+-- TODO: optimise to read in chunks and internally buffer
 function socket_stream:read_internal(len)
 	local left = len
 	local parts = {}
 	local nump = 0
 	while left > 0 do
 		local read = wsock.recv(self.socket, self.buf_, left, 0)
+		if read == win.SOCKET_ERROR then
+			error_format("WSALastError: %d", wsock.WSAGetLastError())
+		end
 		left = left - read
-		parts[#parts + 1] = ffi.string(self.buf_, read)
+		local buf = ffi.string(self.buf_, read)
+		parts[#parts + 1] = buf
 		nump = nump + 1
 	end
 	if nump == 1 then
-		hexdump(parts[1])
+		--hexdump(parts[1])
 		return parts[1]
 	end
 	return table.concat(parts)
@@ -457,11 +484,11 @@ function socket_stream.socket_service_size(host, port)
 	end
 	
 	local service = ffi.new("struct sockaddr_in[1]")
-	service[1].sin_family = win.AF_INET;
-	service[1].sin_addr.S_addr = wsock.inet_addr(host)
-	service[1].sin_port = wsock.htons(port)
+	service[0].sin_family = win.AF_INET;
+	service[0].sin_addr.S_un.S_addr = wsock.inet_addr(host)
+	service[0].sin_port = wsock.htons(port)
 	
-	return socket, service, ffi.sizeof("sockaddr_in")
+	return socket, ffi.cast("const struct sockaddr*", service), ffi.sizeof("sockaddr_in")
 end
 
 function socket_stream.connect(host, port)
@@ -469,9 +496,9 @@ function socket_stream.connect(host, port)
 	
 	local raw_socket, service, size = socket_stream.socket_service_size(host, port)
 	
-	result = wsock.connect(raw_socket, ffi.cast("const struct sockaddr*", service), size)
+	result = wsock.connect(raw_socket, service, size)
 	if result == win.SOCKET_ERROR then
-		error("something about the socket")
+		error_format("error connecting to socket: %x", wsock.WSAGetLastError())
 	end
 	
 	return socket_stream:new(raw_socket)
@@ -483,9 +510,9 @@ function socket_stream.bind(port, host)
 	local host = host or "127.0.0.1"
 	local raw_socket, service, size = socket_stream.socket_service_size(host, port)
 	
-	local result = wsock.bind(socket, service, size)
+	local result = wsock.bind(raw_socket, service, size)
 	if result == win.SOCKET_ERROR then
-		error("something about the socket")
+		error_format("error binding to socket: %x", wsock.WSAGetLastError())
 	end
 	
 	return raw_socket
@@ -496,12 +523,12 @@ function socket_stream.listen(raw_socket, backlog)
 end	
 
 function socket_stream.accept(raw_socket)
-	local addr = ffi.new("sockaddr")
-	local len = ffi.new("int[1]")
+	local raw_socket = wsock.accept(raw_socket, nil, nil)
+	if raw_socket == win.INVALID_SOCKET then
+		error_format("error accepting socket: %x", wsock.WSAGetLastError())
+	end
 	
-	local raw_socket = wsock.accept(raw_socket, addr, len)
-	
-	return raw_socket, addr, len 
+	return socket_stream:new(raw_socket) 
 end
 
 function socket_stream.select(reads, writes, excepts)
