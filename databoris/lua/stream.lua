@@ -2,6 +2,19 @@
 --[[
 
 	Provides a stream API on files and sockets and a (de)serializer for tables
+	
+	-- read a table/object from a file
+	
+	local fs = stream.file.new_reader("somefile.dat")
+	local ob = fs:read_object()
+	fs:close()
+	
+	-- read a table/object from a socket
+	
+	local ss = stream.socket.connect(host, port)
+	local ob = ss:read_object()
+	ss:close()
+	
 
 	Serialization format as below:
 	
@@ -371,6 +384,8 @@ function stream:read_object()
 	return t
 end
 
+--//                   FILE API                          //--
+
 local file_stream = stream:new()
 
 function file_stream:new(filename, access, create_disp, o)
@@ -533,6 +548,9 @@ end
 
 function socket_stream.select(reads, writes, excepts)
 end
+
+-- implement a simple server framework (table/obj in, table/obj out)
+-- could be coroutine based?
 
 return {
 	file   = file_stream,

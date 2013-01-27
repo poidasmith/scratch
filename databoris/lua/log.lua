@@ -1,18 +1,21 @@
 
 -- loggin framework
 
-local win32 = require "win32"
+local ffi      = require("ffi")
+local kernel32 = ffi.load("kernel32")
 
-local function printf(fmt, ...)
-	win32.OutputDebugString(string.format(fmt, ...))
+ffi.cdef[[
+bool SetEnvironmentVariableA(const char* lpName, const char* lpValue);
+unsigned int GetEnvironmentVariableA(const char* lpName, char* lpBuffer, unsigned int nSize);
+]]
+
+function getenv(name, len)
+	local sz  = len or 4096
+	local buf = ffi.new("char[?]", sz, 0)
+	kernel32.GetEnvironmentVariableA(name, buf, sz)
+	return ffi.string(buf)
 end
 
-local function println(t)
-	printf("%s\n", stringit(t))
+function setenv(name, value)
+	return kernel32.SetEnvironmentVariableA(name, value)
 end
-
-return {
-	printf   = printf,
-	println  = println,
-	stringit = stringit,
-}
