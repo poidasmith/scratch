@@ -15,6 +15,6 @@ end
 
 local test = require "test"
 
-function dbos.main(...)
+function main(...)
 	test(...)
 end

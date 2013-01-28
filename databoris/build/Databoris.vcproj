@@ -213,15 +213,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\src\Bitop.c"
-				>
-			</File>
-			<File
 				RelativePath="..\src\Databoris.c"
-				>
-			</File>
-			<File
-				RelativePath="..\src\Win32.c"
 				>
 			</File>
 		</Filter>
