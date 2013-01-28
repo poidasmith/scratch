@@ -263,15 +263,25 @@ function stream:write_internal(str)
 	print(string.format("%q", str))
 end 
 
-function stream:write(...)
-	for _,str in ipairs{...} do
-		--hexdump(str)
-		self.buf[self.index] = str
-		self.index = 1 + self.index
-		self.size  = #str + self.size 
-	end
+function stream:write_string(str)
+	--hexdump(str)
+	self.buf[self.index] = str
+	self.index = 1 + self.index
+	self.size  = #str + self.size 
 	if self.size > self.buf_size then
 		self:flush()
+	end
+end
+
+function stream:write(...)
+	for _,str in ipairs{...} do
+		self:write_string(str)
+	end
+end
+
+function stream:write_ipairs(table)
+	for _,str in ipairs(table) do
+		self:write_string(str)
 	end
 end
 
