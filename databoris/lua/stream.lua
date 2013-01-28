@@ -147,6 +147,7 @@ typedef struct sockaddr_in {
 } sockaddr_in;
 unsigned long inet_addr(const char* cp);
 ushort htons(ushort hostshort);
+int ioctlsocket(SOCKET s, long cmd, unsigned long *argp);
 ]]
 
 local win = table.strict{
@@ -180,6 +181,8 @@ local win = table.strict{
 		return bit.bor(bit.band(a, 0xff), bit.lshift(bit.band(b, 0xff), 8))
 	end
 }
+
+--==============================================================================
 
 local stream = {}
 
@@ -273,11 +276,23 @@ function stream:write_string(str)
 	end
 end
 
-function stream:write(...)
+function stream:write(...) -- slow i think
 	for _,str in ipairs{...} do
 		self:write_string(str)
 	end
 end
+
+function stream:write_same(...)
+	for _,str in ipairs{...} do
+		self.buf[self.index] = str
+		self.index = 1 + self.index
+		self.size  = #str + self.size 
+	end
+	if self.size > self.buf_size then
+		self:flush()
+	end
+end
+
 
 function stream:write_ipairs(table)
 	for _,str in ipairs(table) do
@@ -334,7 +349,7 @@ function stream:read_object()
 	return t
 end
 
---//                   FILE API                          //--
+--==============================================================================
 
 local file_stream = stream:new()
 
@@ -394,6 +409,8 @@ function file_stream:close()
 	kernel32.CloseHandle(self.handle)
 end
 
+--==============================================================================
+
 local socket_stream = stream:new{ init = false }
 
 function socket_stream:new(socket)
@@ -430,6 +447,8 @@ function socket_stream:read_internal(len)
 	end
 	return table.concat(parts)
 end
+
+--==============================================================================
 
 function socket_stream.startup()
 	if socket_stream.init then return end
