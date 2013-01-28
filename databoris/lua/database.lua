@@ -12,7 +12,10 @@ typedef struct git_config     git_config;
 typedef struct git_oid        git_oid;
 typedef struct git_commit     git_commit;
 typedef struct git_object     git_object;
+typedef struct git_odb_object git_odb_object;
+typedef struct git_blob       git_blob;
 typedef int    git_otype;
+typedef int    git_off_t;
 
 void git_libgit2_version(int *major, int *minor, int *rev);
 int  git_libgit2_capabilities(void);
@@ -30,7 +33,7 @@ int  git_reference_lookup(git_reference **out, git_repository *repo, const char 
 int  git_reference_name_to_id(git_oid *out, git_repository *repo, const char *name);
 
 const char* git_commit_message(const git_commit *commit);
-const git_oid * git_commit_tree_id(const git_commit *commit);
+const git_oid* git_commit_tree_id(const git_commit *commit);
 unsigned int git_commit_parentcount(const git_commit *commit);
 const git_oid* git_commit_parent_id(git_commit *commit, unsigned int n);
 
@@ -42,7 +45,12 @@ int  git_object_lookup(
 		git_otype type);
 git_otype git_object_type(const git_object *obj);
 
-		
+const void* git_blob_rawcontent(const git_blob *blob);
+git_off_t git_blob_rawsize(const git_blob *blob);
+int git_blob_create_frombuffer(git_oid *oid, git_repository *repo, const void *buffer, size_t len);
+
+const void* git_odb_object_data(git_odb_object *object);
+int git_odb_object_size(git_odb_object *object);
 ]]
 
 return git

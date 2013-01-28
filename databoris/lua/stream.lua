@@ -30,7 +30,7 @@ string  | x x 0 0  1 0 1 0 | len (num bytes)   | len bytes |
         +--------------------------------------------------+
 --]]
 
-require("common")
+require "common"
 local ffi      = require("ffi")
 local kernel32 = ffi.load("kernel32")
 local wsock    = ffi.load("ws2_32")

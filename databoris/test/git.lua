@@ -1,7 +1,7 @@
 
 package.path = "../lua/?.lua;?.lua"
 
-require("log")
+require "common"
 
 setenv("PATH", getenv("PATH") .. ";../build/Databoris-Debug/")   
 
