@@ -30,6 +30,7 @@ string  | x x 0 0  1 0 1 0 | len (num bytes)   | len bytes |
         +--------------------------------------------------+
 --]]
 
+require("common")
 local ffi      = require("ffi")
 local kernel32 = ffi.load("kernel32")
 local wsock    = ffi.load("ws2_32")
@@ -147,67 +148,6 @@ typedef struct sockaddr_in {
 unsigned long inet_addr(const char* cp);
 ushort htons(ushort hostshort);
 ]]
-
--- borrowed from http://lua-users.org/wiki/HexDump
-function hexdump(buf)
-	for i=1,math.ceil(#buf/16) * 16 do
-    	if (i-1) % 16 == 0 then io.write(string.format('%08x  ', i-1)) end
- 		io.write( i > #buf and '   ' or string.format('%02x ', buf:byte(i)) )
- 		if i %  8 == 0 then io.write(' ') end
- 		if i % 16 == 0 then io.write( buf:sub(i-16+1, i):gsub('%c','.'), '\n' ) end
-    end
-end
-
-function stringit(t) 
-	local res = ""
-	if type(t) == "table" then
-		local first = true
-		res = "{"
-		for i, v in pairs(t) do
-			local sep = ", "
-			if first then
-				sep = " "
-				first = false
-			end
-			res = res .. sep .. stringit(i) .. "=" .. stringit(v) 
-		end
-		res = res .. " }"
-	elseif type(t) == "string" then
-		res = string.format("%q", t)
-	elseif type(t) == "boolean" then
-		res = t and "true" or "false"
-	elseif type(t) == "number" then
-		if math.floor(t) == t then
-			res = string.format("%0.x", t)
-		else
-			res = string.format("%f", t)
-		end
-	else
-		res = tostring(t)		
-	end
-	return res
-end
-
-function printf(...)
-	print(string.format(...))
-end
-
-function error_format(...)
-	return error(string.format(...))
-end
-
-function table.strict(t)
-	local mt = {
-		__index = function(table, key)
-			if type(key) == "string" then
-				error_format("%s not defined for table", key)
-			end
-			return table[key]
-		end
-	}
-	setmetatable(t, mt)
-	return t
-end
 
 local win = table.strict{
 	GENERIC_READ    = 0x80000000,
@@ -467,7 +407,7 @@ function socket_stream:read_internal(len)
 	while left > 0 do
 		local read = wsock.recv(self.socket, self.buf_, left, 0)
 		if read == win.SOCKET_ERROR then
-			error_format("WSALastError: %d", wsock.WSAGetLastError())
+			errorf("WSALastError: %d", wsock.WSAGetLastError())
 		end
 		left = left - read
 		local buf = ffi.string(self.buf_, read)
@@ -488,7 +428,7 @@ function socket_stream.startup()
 	
 	local result = wsock.WSAStartup(win.MAKEWORD(2,2), wsaData)
 	if result ~= win.NO_ERROR then
-		error_format("WSAStartup function failed with error: %d\n", result)
+		errorf("WSAStartup function failed with error: %d\n", result)
 	end	
 end
 
@@ -513,7 +453,7 @@ function socket_stream.connect(host, port)
 	
 	result = wsock.connect(raw_socket, service, size)
 	if result == win.SOCKET_ERROR then
-		error_format("error connecting to socket: %x", wsock.WSAGetLastError())
+		errorf("error connecting to socket: %x", wsock.WSAGetLastError())
 	end
 	
 	return socket_stream:new(raw_socket)
@@ -527,7 +467,7 @@ function socket_stream.bind(port, host)
 	
 	local result = wsock.bind(raw_socket, service, size)
 	if result == win.SOCKET_ERROR then
-		error_format("error binding to socket: %x", wsock.WSAGetLastError())
+		errorf("error binding to socket: %x", wsock.WSAGetLastError())
 	end
 	
 	return raw_socket
@@ -540,7 +480,7 @@ end
 function socket_stream.accept(raw_socket)
 	local raw_socket = wsock.accept(raw_socket, nil, nil)
 	if raw_socket == win.INVALID_SOCKET then
-		error_format("error accepting socket: %x", wsock.WSAGetLastError())
+		errorf("error accepting socket: %x", wsock.WSAGetLastError())
 	end
 	
 	return socket_stream:new(raw_socket) 
