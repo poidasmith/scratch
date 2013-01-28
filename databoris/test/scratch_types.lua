@@ -1,6 +1,6 @@
 
 package.path = "../lua/?.lua;?.lua"
 
-local env = require("lang_env")
+require "common"
 
-print(env.expand("%TEMP%/test.bin"))
+print(env("%PATH%"))

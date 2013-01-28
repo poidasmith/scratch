@@ -5,8 +5,13 @@ local ffi      = require("ffi")
 local kernel32 = ffi.load("kernel32")
 
 ffi.cdef[[
-bool SetEnvironmentVariableA(const char* lpName, const char* lpValue);
-unsigned int GetEnvironmentVariableA(const char* lpName, char* lpBuffer, unsigned int nSize);
+typedef unsigned long  DWORD;
+typedef char*          LPTSTR;
+typedef const char*    LPCTSTR;
+
+DWORD ExpandEnvironmentStringsA(LPCTSTR lpSrc, LPTSTR lpDst, DWORD nSize);
+bool SetEnvironmentVariableA(LPCTSTR lpName, LPCTSTR lpValue);
+DWORD GetEnvironmentVariableA(LPCTSTR lpName, LPTSTR lpBuffer, DWORD nSize);
 ]]
 
 function getenv(name, len)
@@ -18,6 +23,12 @@ end
 
 function setenv(name, value)
 	return kernel32.SetEnvironmentVariableA(name, value)
+end
+
+function env(str)
+	local var = ffi.new("char[4906]")
+	local len = kernel32.ExpandEnvironmentStringsA(str, var, 4096)
+	return ffi.string(var, len)
 end
 
 -- borrowed from http://lua-users.org/wiki/HexDump
