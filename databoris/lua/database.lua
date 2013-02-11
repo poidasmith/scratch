@@ -21,7 +21,7 @@ void git_libgit2_version(int *major, int *minor, int *rev);
 int  git_libgit2_capabilities(void);
 void git_libgit2_opts(int option, ...);
 
-int  git_repository_open(git_repository **out, const char *path);
+int  __cdecl git_repository_open(git_repository **out, const char *path);
 void git_repository_free(git_repository *repo);
 int  git_repository_init(git_repository **out,const char *path, unsigned is_bare);
 int  git_repository_head(git_reference **out, git_repository *repo);
@@ -53,4 +53,20 @@ const void* git_odb_object_data(git_odb_object *object);
 int git_odb_object_size(git_odb_object *object);
 ]]
 
-return git
+local impl = {}
+
+function impl.repo_open(path)
+	local repo = ffi.new("git_repository*");
+	local res = git.git_repository_open(repo, path)
+	if res ~= 0 then
+		errorf("problem opening repository: %d", res)
+	end
+	return repo	
+end
+
+function impl.repo_free(repo)
+	git.git_repository_free(repo)
+end
+
+return impl
+

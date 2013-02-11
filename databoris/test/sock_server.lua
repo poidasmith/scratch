@@ -20,3 +20,11 @@ while true do
 	local ss = socket.accept(s)
 	pcall(listen_loop, ss)
 end
+
+table{
+	cols=4,
+	rows=5,
+	row{
+		col{"asdf"}
+	}
+} 

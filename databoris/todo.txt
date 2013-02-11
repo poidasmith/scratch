@@ -60,13 +60,17 @@ false=0x2
  	
 === networking
 
- - streaming (can it be done with chunks in a table?)
+ - streaming (can it be done with chunks in a table? YES)
  - clients
  	- send block/stream
  	- receive block/stream
  - server
  	- socket select
  	- coroutine for handles
+ 	- libuv for fast network stack
+ - messaging
+ 	- equivalent of rabbitmq, zeromq
+ 	- may be able to use 0mq directly as a library?
  
 === client server procotol
 
@@ -92,4 +96,43 @@ false=0x2
 
 - can we use the name of the executable as a lookup into a script/config
   on the sourcedb. 
+  
+=== runtime
+
+- need a management system for DLLs. ideally we want to be able to stream
+  in the DLL from the source server based on our bootstrap requirements
+- can we store DLLs as hashes? 
+- might be easier just to version number them and record their dependencies
+- eg build a manifest for the DLL (ala ivy modules)
+- hook the LoadLibrary function to plug in the right DLL based on our manifest
+- might want a built in way to clean up stale/old files
+
+
+ %TEMP%/space for application - how to organize...
+ 
+- may need a central/app specific cache of blobs under %TEMP%
+- this can be a form of system update 
+
+=== UI
+
+ - UI widgets are different views/editors of tables
+ 	 - containers are resursive holders of other widgets
+ 	 - layouts?
+ 	 
+  - compound layouts, eg higher level desc of widget tree
+  
+  
+  - can we just embed chromium?
+  		- and then embed the text,table editors as plugins?
+  - convert from css,html,javascript to internal format?
+  - transcoding from javascript to lua as a way to implement a fast browser?
+ 
+=== Library plugins
+
+	- chromium
+	- vlc library (embed videos)
+	- git
+	- wifi/bluetooth 
+	- scintilla? editor
+	
  

@@ -1,0 +1,85 @@
+
+zio.c
+=====
+
+luaZ_fill: 
+luaZ_init: initialize a ZIO struct
+luaZ_read: 
+luaZ_openspace:
+
+lvm.c
+=====
+
+luaV_tonumber: convert passed in object to number or return null
+luaV_tostring: convert a lua number to string
+traceexec: 
+callTM: 
+luaV_gettable:
+luaV_settable:
+call_binTM:
+get_equalTM:
+call_orderTM:
+l_strcmp:
+luaV_lessthan:
+luaV_lessequal:
+luaV_equalobj_:
+luaV_concat:
+luaV_objlen: return length of object #var
+luaV_arith: perform an arithmetic operation on two values
+getcached: check for a cached closure
+pushclosure: create a new closure and set upvalues and push on stack
+luaV_finishop: finish execution of an opcode interrupted by an yield
+luaV_execute: main loop of interpreter
+
+opcodes 
+
+OP_MOVE, OP_LOADK, OP_LOADKX, OP_LOADBOOL, OP_LOADNIL, OP_GETUPVAL, OP_GETTABUP, OP_GETTABLE, OP_SETTABLE, OP_SETTABUOP, OP_STUPVAL, OP_SETTABLE, OP_NEWTABLE, OP_SELF, OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_MOD, OP_POW, OP_UNM, OP_NOT, OP_LEN, OP_CONCAT, OP_JMP, OP_EQ, OP_LT, OP_LE, OP_TEST, OP_TESTSET, OP_CALL, OP_TAILCALL, OP_RETURN, OP_FORLOOP, OP_FORPREP, OP_TFORCALL, OP_TFORLOOP, OP_SETLIST, OP_CLOSURE, OP_VARARG, OP_EXTRAARG
+
+ltm.c: tag methods
+=====
+
+luaT_typenames: set of typenames in lua
+luaT_init: setup event names in string pool and lock them so GC doesn't collect
+luaT_gettm: 
+luaT_gettmbyobj: 
+
+ltablib.c: table manip library
+=========
+
+maxn: find the max number in a table?
+tinsert: insert an element into a table
+tremove: remove an element from a table
+addfield: add a field in a table to a buffer (used in concat)
+tconcat: concat all the elements of a table into a string
+sort: sort elements of the table
+
+ltable.c: table impl
+========
+
+hashnum: hash position for lua numbers
+mainposition: hash position for any type
+
+
+lcode.c: code generator
+=======
+
+luaK_getlabel:
+luaK_nil: 
+luaK_jump: 
+luaK_ret: 
+luaK_patchlist:
+luaK_patchclose:
+condjump: 
+fixjump: 
+isnumeral: 
+getjump:
+getjumpcontrol:
+need_value: 
+patchtestreg:
+removevalues:
+patchlistaux:
+dischargejpc:
+
+
+
+

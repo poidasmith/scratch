@@ -14,6 +14,12 @@ bool SetEnvironmentVariableA(LPCTSTR lpName, LPCTSTR lpValue);
 DWORD GetEnvironmentVariableA(LPCTSTR lpName, LPTSTR lpBuffer, DWORD nSize);
 ]]
 
+-- TODO: use a metatable so we can do things like:
+--   env.PATH = env.PATH .. ";../something/"
+--   for k,v in pairs(env) do
+--     print(k, "=", v)
+--   end
+
 function getenv(name, len)
 	local sz  = len or 4096
 	local buf = ffi.new("char[?]", sz, 0)
@@ -83,7 +89,7 @@ function table.strict(t)
 	local mt = {
 		__index = function(table, key)
 			if type(key) == "string" then
-				error_format("%s not defined for table", key)
+				errorf("%s not defined for table", key)
 			end
 			return table[key]
 		end
