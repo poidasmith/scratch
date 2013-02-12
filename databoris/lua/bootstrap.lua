@@ -10,14 +10,16 @@ bootstrapper:
 design of lua expression/script
 	 - name
 	 - 
-	 
-lua://blah:6587,lua://blah2:6687
 	load_thing: windows.service
 	{
 		expr="...the code...",
 		version="some string", -- could be an table too
 		timestamp="sdf"		
 	}
+
+	 
+lua://blah:6587,lua://blah2:6687
+
 ]]
 
 local ffi = require "ffi"
