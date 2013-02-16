@@ -25,10 +25,9 @@ void __stdcall git_libgit2_version(int *major, int *minor, int *rev);
 int  __stdcall git_libgit2_capabilities(void);
 void __stdcall git_libgit2_opts(int option, ...);
 
-int __stdcall git_repository_odb(git_odb **out, git_repository *repo);
-
 int  __stdcall git_repository_open(git_repository **out, const char *path);
 void __stdcall git_repository_free(git_repository *repo);
+int  __stdcall git_repository_odb(git_odb **out, git_repository *repo);
 int  __stdcall git_repository_init(git_repository **out,const char *path, unsigned is_bare);
 int  __stdcall git_repository_head(git_reference **out, git_repository *repo);
 int  __stdcall git_repository_set_workdir(git_repository *repo, const char *workdir, int update_gitlink);
@@ -151,7 +150,7 @@ function repo_idx.type(repo, oid)
 	local plen = ffi.new("size_t[1]")
 	local ptype = ffi.new("git_otype[1]")
 	check(git.git_odb_read_header(plen, ptype, podb[0], oid))
-	return ptype[0]
+	return ptype[0], plen[0]
 end
 
 local function free(obj)
@@ -164,6 +163,8 @@ function repo_idx.lookup(repo, oid, type)
 	if type == db.GIT_OBJ_COMMIT then obj = ffi.new("git_commit*[1]")
 	elseif type == db.GIT_OBJ_TREE then obj = ffi.new("git_tree*[1]")
 	elseif type == db.GIT_OBJ_BLOB then obj = ffi.new("git_blob*[1]")
+	else
+		errorf("unknown oid type: %s", type)
 	end
 	check(git.git_object_lookup(ffi.cast("struct git_object**", obj), repo, oid, type))
 	ffi.gc(obj[0], free) -- register for cleanup
@@ -253,35 +254,6 @@ end
 
 local blob_mt = { __index = blob_idx }
 ffi.metatype("struct git_blob", blob_mt)
-
--- TEST
-
-local repo = db.open "f:/eclipse/git/scratch"
-local oid = repo:name_to_id "refs/remotes/origin/master"
--- better? repo:ref['remotes/origin/master']
-print(oid)
-local c = repo:lookup(oid)
-print(c.type)
-print(c.message)
-print("author="..stringit(c.author))
---print(c.time)
-print(c.id)
-print(c.id)
-print(stringit(c.parents))
-local tree = c.tree
-print(tree.type)
-print(repo:type(tree.id))
-local entries = tree.entries
-print(stringit(entries))
-
-for k,v in pairs(entries) do
-	printf("%s, %s, %s", k, v.id, v.type)
-end
-
---local readme = repo:lookup(entries['README.md'].id, entries['README.md'].type)
---print(readme)
---print(readme.type)
---print(readme.data)
 
 return db
 
