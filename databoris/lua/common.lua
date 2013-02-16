@@ -67,7 +67,7 @@ function stringit(t)
 		res = t and "true" or "false"
 	elseif type(t) == "number" then
 		if math.floor(t) == t then
-			res = string.format("%0.x", t)
+			res = string.format("%0.f", t)
 		else
 			res = string.format("%f", t)
 		end
@@ -82,6 +82,7 @@ function printf(...)
 end
 
 function errorf(...)
+	println(string.format(...))
 	return error(string.format(...))
 end
 

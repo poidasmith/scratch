@@ -1,5 +1,5 @@
 
-package.path = "../lua/?.lua;../test/?.lua"
+--package.path = "../lua/?.lua;../test/?.lua"
 
 --[[
 bootstrapper: 
@@ -24,18 +24,40 @@ lua://blah:6587,lua://blah2:6687
 
 local ffi = require "ffi"
 local kernel32 = ffi.load "kernel32"
+require "common"
 
 ffi.cdef[[
-typedef char* LPTSTR;
+typedef const char* LPCSTR;
 void OutputDebugStringA(LPCSTR lpOutputString);
 ]]
 
-function print(s)
-	kernel32.OutputDebugStringA(s)
+function log(s)
+	kernel32.OutputDebugStringA(stringit(s))
 end
 
-local test = require "test"
-
-function main(...)
-	test(...)
+function println(o)
+	if type(o) == "string" then
+		kernel32.OutputDebugStringA(o .. "\n")
+	end
 end
+
+local last_func = nil
+local function trace(event, line)
+	local caller = {debug.getinfo(2)}
+	--[[local locals = {}
+	local i = 1
+	while true do
+		local name, value = debug.getlocal(1, i)
+		if not name then
+			break
+		end
+		locals[i] = { name, value }
+		i = i + 1		
+	end	
+	caller.locals = locals]]
+	println(stringit(caller))
+end 
+
+--println("======================")
+--debug.sethook(trace, "Slfu")
+
