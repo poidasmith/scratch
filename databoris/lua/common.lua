@@ -5,6 +5,22 @@ local ffi      = require("ffi")
 local kernel32 = ffi.load("kernel32")
 
 ffi.cdef[[
+typedef const char* LPCSTR;
+void OutputDebugStringA(LPCSTR lpOutputString);
+]]
+
+function log(s)
+	kernel32.OutputDebugStringA(stringit(s))
+end
+
+function println(o)
+	if type(o) == "string" then
+		kernel32.OutputDebugStringA(o .. "\n")
+	end
+end
+
+
+ffi.cdef[[
 typedef unsigned long  DWORD;
 typedef char*          LPTSTR;
 typedef const char*    LPCTSTR;

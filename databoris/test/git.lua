@@ -5,7 +5,7 @@ require "bootstrap"
 
 setenv("PATH", env("%PATH%;../build/Databoris-Debug/"))
 
---os.env.PATH = os.env.PATH .. ";../build/Databoris-Debug/"   
+--os.env.PATH = "%PATH%;../build/Databoris-Debug/"   
 
 local db = require "database"
 

@@ -17,70 +17,19 @@ typedef struct git_odb_object git_odb_object;
 typedef struct git_blob       git_blob;
 typedef int    git_otype;
 typedef int    git_off_t;
+typedef __int64 git_time_t;
 typedef struct {
 	unsigned char id[20];
 } git_oid;
-
-void __stdcall git_libgit2_version(int *major, int *minor, int *rev);
-int  __stdcall git_libgit2_capabilities(void);
-void __stdcall git_libgit2_opts(int option, ...);
-
-int  __stdcall git_repository_open(git_repository **out, const char *path);
-void __stdcall git_repository_free(git_repository *repo);
-int  __stdcall git_repository_odb(git_odb **out, git_repository *repo);
-int  __stdcall git_repository_init(git_repository **out,const char *path, unsigned is_bare);
-int  __stdcall git_repository_head(git_reference **out, git_repository *repo);
-int  __stdcall git_repository_set_workdir(git_repository *repo, const char *workdir, int update_gitlink);
-int  __stdcall git_repository_config(git_config **out, git_repository *repo);
-void __stdcall git_repository_set_config(git_repository *repo, git_config *config);
-
-int  __stdcall git_reference_lookup(git_reference **out, git_repository *repo, const char *name);
-int  __stdcall git_reference_name_to_oid(git_oid *out, git_repository *repo, const char *name);
-
-char* __stdcall git_oid_tostr(char *out, size_t n, const git_oid *id);
-
-int __stdcall git_commit_lookup(git_commit **out, git_repository *repo, const git_oid *id);
-
-void __stdcall git_object_free(git_object *object);
-int  __stdcall git_object_lookup(
-		git_object **object,
-		git_repository *repo,
-		const git_oid *id,
-		git_otype type);
-git_otype __stdcall git_object_type(const git_object *obj);
-
-const void* __stdcall git_blob_rawcontent(const git_blob *blob);
-git_off_t   __stdcall git_blob_rawsize(const git_blob *blob);
-int         __stdcall git_blob_create_frombuffer(git_oid *oid, git_repository *repo, const void *buffer, size_t len);
-
-const void* __stdcall git_odb_object_data(git_odb_object *object);
-int         __stdcall git_odb_object_size(git_odb_object *object);
-void        __stdcall git_odb_free(git_odb *db);
-int         __stdcall git_odb_read_header(size_t *len_p, git_otype *type_p, git_odb *db, const git_oid *id);
-
-typedef __int64 git_time_t;
 typedef struct git_time {
 	git_time_t time;
 	int offset;
 } git_time;
-
 typedef struct git_signature {
 	char *name;
 	char *email;
 	git_time when;
 } git_signature;
-
-const char *          __stdcall git_commit_message(git_commit *commit);
-const char *          __stdcall git_commit_message_encoding(git_commit *commit);
-const git_signature * __stdcall git_commit_committer(git_commit *commit);
-const git_signature * __stdcall git_commit_author(git_commit *commit);
-const git_oid *       __stdcall git_commit_id(git_commit *commit);
-git_time_t            __stdcall git_commit_time(git_commit *commit);
-int                   __stdcall git_commit_time_offset(git_commit *commit);
-int                   __stdcall git_commit_tree(git_tree **tree_out, git_commit *commit);
-unsigned int          __stdcall git_commit_parentcount(git_commit *commit);
-int                   __stdcall git_commit_parent(git_commit **parent, git_commit *commit, unsigned int n);
-
 typedef struct git_tree_entry {
 	__int16 removed;
 	__int16 attr;
@@ -88,12 +37,36 @@ typedef struct git_tree_entry {
 	size_t filename_len;
 	char filename[1];
 } git_tree_entry;
-
-unsigned int           __stdcall git_tree_entrycount(const git_tree *tree);
-git_otype              __stdcall git_tree_entry_type(const git_tree_entry *entry);
-const git_oid *        __stdcall git_tree_id(const git_tree *tree);
-const git_tree_entry * __stdcall git_tree_entry_byindex(git_tree *tree, size_t idx);
-
+__stdcall void         git_libgit2_version(int *major, int *minor, int *rev);
+__stdcall int          git_repository_open(git_repository **out, const char *path);
+__stdcall void         git_repository_free(git_repository *repo);
+__stdcall int          git_repository_odb(git_odb **out, git_repository *repo);
+__stdcall int          git_reference_name_to_oid(git_oid *out, git_repository *repo, const char *name);
+__stdcall char*        git_oid_tostr(char *out, size_t n, const git_oid *id);
+__stdcall int          git_commit_lookup(git_commit **out, git_repository *repo, const git_oid *id);
+__stdcall void         git_object_free(git_object *object);
+__stdcall int          git_object_lookup(git_object **object,git_repository *repo,const git_oid *id,git_otype type);
+__stdcall git_otype    git_object_type(const git_object *obj);
+__stdcall const void*  git_blob_rawcontent(const git_blob *blob);
+__stdcall git_off_t    git_blob_rawsize(const git_blob *blob);
+__stdcall const void*  git_odb_object_data(git_odb_object *object);
+__stdcall int          git_odb_object_size(git_odb_object *object);
+__stdcall void         git_odb_free(git_odb *db);
+__stdcall int          git_odb_read_header(size_t *len_p, git_otype *type_p, git_odb *db, const git_oid *id);
+__stdcall git_time_t   git_commit_time(git_commit *commit);
+__stdcall int          git_commit_time_offset(git_commit *commit);
+__stdcall int          git_commit_tree(git_tree **tree_out, git_commit *commit);
+__stdcall unsigned int git_commit_parentcount(git_commit *commit);
+__stdcall int          git_commit_parent(git_commit **parent, git_commit *commit, unsigned int n);
+__stdcall unsigned int git_tree_entrycount(const git_tree *tree);
+__stdcall git_otype    git_tree_entry_type(const git_tree_entry *entry);
+__stdcall const char * git_commit_message(git_commit *commit);
+__stdcall const char * git_commit_message_encoding(git_commit *commit);
+__stdcall const git_signature *  git_commit_committer(git_commit *commit);
+__stdcall const git_signature *  git_commit_author(git_commit *commit);
+__stdcall const git_oid *        git_commit_id(git_commit *commit);
+__stdcall const git_oid *        git_tree_id(const git_tree *tree);
+__stdcall const git_tree_entry * git_tree_entry_byindex(git_tree *tree, size_t idx);
 ]]
 
 local db = {

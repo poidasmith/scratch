@@ -42,8 +42,9 @@ package.path = "../lua/?.lua;?.lua"
 require "common"
 setenv("PATH", env("%PATH%;../build/Databoris-Debug/"))
 
-local ffi = require "ffi"
-local sci = ffi.load("SciLexer")
+local ffi    = require "ffi"
+local user32 = ffi.load "user32"
+ffi.load "SciLexer" 
 
 ffi.cdef [[
 typedef unsigned long DWORD;
@@ -66,4 +67,9 @@ HWND CreateWindowExA(
 	LPVOID lpParam);
 ]]
 
+local hwnd_mt = { __index = hwnd_idx }
+ffi.metatype("HWND", hwnd_mt)
 
+local w = window.new("Scintilla", 500, 400)
+
+ 

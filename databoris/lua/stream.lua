@@ -150,7 +150,7 @@ ushort htons(ushort hostshort);
 int ioctlsocket(SOCKET s, long cmd, unsigned long *argp);
 ]]
 
-local win = table.strict{
+local win = table.strict {
 	GENERIC_READ    = 0x80000000,
 	GENERIC_WRITE   = 0x40000000, 
 	GENERIC_EXECUTE = 0x20000000,
@@ -182,7 +182,7 @@ local win = table.strict{
 	end
 }
 
---==============================================================================
+-- STREAM
 
 local stream = {}
 
@@ -349,7 +349,7 @@ function stream:read_object()
 	return t
 end
 
---==============================================================================
+-- FILES
 
 local file_stream = stream:new()
 
@@ -409,7 +409,7 @@ function file_stream:close()
 	kernel32.CloseHandle(self.handle)
 end
 
---==============================================================================
+-- SOCKET 
 
 local socket_stream = stream:new{ init = false }
 
@@ -448,7 +448,7 @@ function socket_stream:read_internal(len)
 	return table.concat(parts)
 end
 
---==============================================================================
+-- SOCKET UTILS
 
 function socket_stream.startup()
 	if socket_stream.init then return end
