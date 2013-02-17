@@ -25,10 +25,19 @@ local function res_loader_init(self)
 		typedef long HRSRC;
 		typedef long HMODULE;
 		typedef long HGLOBAL;
-		HRSRC   FindResourceA(HMODULE hModule, const char* lpName, const char* lpType);	
+		HRSRC   FindResourceA(HMODULE hModule, int name, int type);	
 		HGLOBAL LoadResource(HMODULE hModule, HRSRC hResInfo);
-		void*   LockResource(HGLOBAL hResData);
+		char*   LockResource(HGLOBAL hResData);
 	]]
+	self.kernel32 = ffi.load "kernel32"
+end
+
+local function res_loader_require(module)
+	local type = self.mapping[module]
+	if not type then return nil end
+	local hrsrc = self.kernel32.FindResourceA(self.hinstance, 1, type)
+	local hglobal = self.kernel32.LoadResource(hinstance, hrsrc)
+	return ffi.string(self.kernel32.LockResource(hglobal))
 end
 
 function loaders.resource(hinstance, mapping)
@@ -50,9 +59,15 @@ function loaders.git(repo_path, ref)
 end
 
 -- TCP: load from a socket: send { fn = "loaders_require_raw", module } -> [module string]
+
+local function tcp_loader_init(self)
+end
+
+local function tcp_loader_require(module)
+end
  
-function loaders.tcp(host, port)
-	local self 
+function loaders.tcp(host, port, secondary_host, secondary_port)
+	local self = { host = host, port = port, secondary_host = secondary_host, secondary_port = secondary_port }
 	return build_loader { self = self, init = tcp_loader_init, require = tcp_loader_require }
 end
 
