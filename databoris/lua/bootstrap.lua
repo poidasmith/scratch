@@ -22,9 +22,26 @@ lua://blah:6587,lua://blah2:6687
 
 ]]
 
+function os.resource(hinstance, name, type)
+	local ffi = require "ffi"
+	ffi.cdef[[
+		typedef long HRSRC;
+		typedef long HMODULE;
+		typedef long HGLOBAL;
+		HRSRC   FindResourceA(HMODULE hModule, int name, int type);	
+		HGLOBAL LoadResource(HMODULE hModule, HRSRC hResInfo);
+		char*   LockResource(HGLOBAL hResData);
+	]]
+	local kernel32 = ffi.load "kernel32"
+	local hrsrc = kernel32.FindResourceA(hinstance, name, type)
+	local hglobal = kernel32.LoadResource(hinstance, hrsrc)
+	return ffi.string(kernel32.LockResource(hglobal))		
+end
+
+-- require "loaders"
+assert(loadstring(os.resource(0, 1, 692), "loaders"))()
 require "common"
-
-
+require "_main"
 
 --println("======================")
 --debug.sethook(trace, "Slfu")

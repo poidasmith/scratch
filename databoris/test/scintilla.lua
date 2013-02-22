@@ -40,6 +40,7 @@ case WM_NOTIFY:
 
 package.path = "../lua/?.lua;?.lua"
 require "common"
+
 setenv("PATH", env("%PATH%;../build/Databoris-Debug/"))
 
 local ffi    = require "ffi"
@@ -69,6 +70,27 @@ HWND CreateWindowExA(
 
 local hwnd_mt = { __index = hwnd_idx }
 ffi.metatype("HWND", hwnd_mt)
+
+local editor = win {
+	-- properties
+	class  = "Scintilla",
+	styles = nil,
+	width  = 800,
+	height = 600,
+	
+	-- setup editor
+	init   = function(self, hwnd)
+	end,
+	
+	-- paint editor
+	paint  = function(self, hwnd)
+	end,
+	
+	-- resize editor
+	resize = function(self, hwnd)
+	end,
+}
+
 
 local w = window.new("Scintilla", 500, 400)
 

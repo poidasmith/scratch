@@ -14,7 +14,8 @@
 #include <windows.h>
 #include <commctrl.h>
 
-#define RT_INI_FILE MAKEINTRESOURCE(687)
+#define RT_INI_FILE  MAKEINTRESOURCE(687)
+#define RT_BOOTSTRAP MAKEINTRESOURCE(688)
 #define RES_MAGIC_SIZE 4
 #define INI_RES_MAGIC MAKEFOURCC('I','N','I',' ')
 
@@ -31,13 +32,13 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	luaL_openlibs(l); // stdlibs
 
 	// Load and execute "kernel"
-	hi = FindResource(hInstance, MAKEINTRESOURCE(1), MAKEINTRESOURCE(RT_INI_FILE));
+	hi = FindResource(hInstance, MAKEINTRESOURCE(1), MAKEINTRESOURCE(RT_BOOTSTRAP));
 	if(hi)	{
 		HGLOBAL hg = LoadResource(hInstance, hi);
 		PBYTE pb = (PBYTE) LockResource(hg);
 		DWORD* pd = (DWORD*) pb;
 		script = *pd == INI_RES_MAGIC ? (char *) &pb[RES_MAGIC_SIZE] : (char *) pb;
-		s = luaL_dostring(l, script);	
+		s = luaL_dostring(l, script);
 	}
 
 	// Check result
@@ -48,13 +49,5 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return -1;
 	} 
 
-	// Run our main
-	lua_getglobal(l, "main");
-	lua_pushinteger(l, hInstance);
-	lua_pushinteger(l, hPrevInstance);
-	lua_pushstring(l, lpCmdLine);
-	lua_pushinteger(l, nCmdShow);
-	lua_pcall(l, 4, 1, 0);
-
-	return lua_tointeger(l, -1);
+	return 0;
 }
