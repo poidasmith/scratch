@@ -22,6 +22,7 @@ end
 -- RES: load from executable resource
 
 local function res_loader_require(self, module)
+	if println then println(module) end
 	local type = self.mapping[module]
 	if not type then return nil end
 	return loadstring(os.resource(0, 1, type))
@@ -34,7 +35,7 @@ function loaders.resource(mapping)
 			common   = 689,
 			database = 690, 
 			stream   = 691, 
-	    }	, 
+	    }, 
 		require = res_loader_require
 	}
 end

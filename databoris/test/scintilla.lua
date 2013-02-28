@@ -55,6 +55,8 @@ typedef long HWND;
 typedef long HMENU;
 typedef void* LPVOID;
 
+typedef DWORD (__stdcall* WNDPROC)(HANDLE, DWORD, DWORD, DWORD);
+
 HWND CreateWindowExA(
 	DWORD dwExStyle, 
 	LPCSTR lpClassName, 
@@ -66,6 +68,7 @@ HWND CreateWindowExA(
 	HMENU hMenu, 
 	HINSTANCE hInstance, 
 	LPVOID lpParam);
+	
 ]]
 
 local hwnd_mt = { __index = hwnd_idx }
@@ -75,8 +78,13 @@ local editor = win {
 	-- properties
 	class  = "Scintilla",
 	styles = nil,
+	
+	--[[ use layout manager
+	x      = 100,
+	y      = 100,
 	width  = 800,
 	height = 600,
+	]]
 	
 	-- setup editor
 	init   = function(self, hwnd)
@@ -94,4 +102,25 @@ local editor = win {
 
 local w = window.new("Scintilla", 500, 400)
 
- 
+
+-- main windows layout
+
+table = {
+	rows = {
+		{
+			height  = 10,
+			class   = "blah",
+			hscroll = nil,
+			vscroll = { pos = 10 },
+			fg      = nil,
+			bg      = nil,
+			columns = {
+				{
+				},
+			}
+		}
+	},
+}
+
+
+

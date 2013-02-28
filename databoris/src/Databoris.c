@@ -12,13 +12,11 @@
 #include <lualib.h>
 #include <lauxlib.h>
 #include <windows.h>
-#include <commctrl.h>
 
 #define RT_INI_FILE  MAKEINTRESOURCE(687)
 #define RT_BOOTSTRAP MAKEINTRESOURCE(688)
 #define RES_MAGIC_SIZE 4
 #define INI_RES_MAGIC MAKEFOURCC('I','N','I',' ')
-
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -46,8 +44,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		err = lua_tostring(l, -1);
 		OutputDebugString("dbos: ");
 		OutputDebugString(err == NULL ? "script could not be loaded\n" : err);
-		return -1;
 	} 
 
-	return 0;
+	lua_close(l);
+	return s;
 }

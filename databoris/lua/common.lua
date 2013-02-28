@@ -5,8 +5,14 @@ local ffi      = require("ffi")
 local kernel32 = ffi.load("kernel32")
 
 ffi.cdef[[
-typedef const char* LPCSTR;
-void OutputDebugStringA(LPCSTR lpOutputString);
+typedef unsigned long  DWORD;
+typedef char*          LPSTR;
+typedef const char*    LPCSTR;
+
+void  OutputDebugStringA(LPCSTR lpOutputString);
+DWORD ExpandEnvironmentStringsA(LPCSTR lpSrc, LPSTR lpDst, DWORD nSize);
+bool  SetEnvironmentVariableA(LPCSTR lpName, LPCSTR lpValue);
+DWORD GetEnvironmentVariableA(LPCSTR lpName, LPSTR lpBuffer, DWORD nSize);
 ]]
 
 function log(s)
@@ -18,17 +24,6 @@ function println(o)
 		kernel32.OutputDebugStringA(o .. "\n")
 	end
 end
-
-
-ffi.cdef[[
-typedef unsigned long  DWORD;
-typedef char*          LPTSTR;
-typedef const char*    LPCTSTR;
-
-DWORD ExpandEnvironmentStringsA(LPCTSTR lpSrc, LPTSTR lpDst, DWORD nSize);
-bool SetEnvironmentVariableA(LPCTSTR lpName, LPCTSTR lpValue);
-DWORD GetEnvironmentVariableA(LPCTSTR lpName, LPTSTR lpBuffer, DWORD nSize);
-]]
 
 -- TODO: use a metatable so we can do things like:
 --   env.PATH = env.PATH .. ";../something/"

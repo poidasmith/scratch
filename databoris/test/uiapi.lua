@@ -1,43 +1,100 @@
 
-local winnt = require "winnt"
+require "common"
+setenv("PATH", env("%PATH%;../build/Databoris-Debug/"))
+local winnt    = require "winnt"
+local ffi      = require "ffi"
+local kernel32 = ffi.load("kernel32")
+local comctl32 = ffi.load("comctl32")
+local user32   = ffi.load("user32")
+local gdi32    = ffi.load("gdi32")
 
---[[
-	testing
-]]
+-- initialize common stuff
+local hInstance = kernel32.GetModuleHandleA(nil)
+local sz = ffi.sizeof("INITCOMMONCONTROLSEX")
+local ic = ffi.new("INITCOMMONCONTROLSEX", { dwSize = sz, dwICC = 4 })
+comctl32.InitCommonControlsEx(ic)
 
-local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
-	win32.InitCommonControlsEx()
-	local clz = "lua_test_window"
-	local cursor = win32.LoadCursor(win32.IDC_ARROW)
-	local icon   = win32.LoadIcon(win32.IDI_APPLICATION)
-	local bg     = win32.GetStockObject(0)
-	win32.RegisterClassEx(clz, bitop.orr(CS_VREDRAW, CS_HREDRAW), 0, 0, hInstance, icon, cursor, bg)
-	local hwnd = win32.CreateWindowEx( 
-		win32.WS_EX_WINDOWEDGE, 
-		clz, 
-		"The title of my window",
-		win32.WS_OVERLAPPEDWINDOW,
-		win32.CW_USEDEFAULT,
-		win32.CW_USEDEFAULT,
-		540,
-		420,
-		nil,
-		nil,
-		hInstance,
-		nil,
-		win32.map_wndproc({
-			[win32.WM_CREATE]      = wnd_create,
-			[win32.WM_CLOSE]       = wnd_close,
-			[win32.WM_COMMAND]     = wnd_command,
-			[win32.WM_DESTROY]     = wnd_destroy,
-			[win32.WM_LBUTTONDOWN] = wnd_lbuttondown,
-			[win32.WM_RBUTTONDOWN] = wnd_rbuttondown,
-			[win32.WM_ERASEBKGND]  = wnd_erasebkgnd,
-			[win32.WM_PAINT]       = wnd_paint,
-			[win32.WM_SIZE]        = wnd_size
-		})
-	)
-	win32.ShowWindow(hwnd, nCmdShow)
-	win32.UpdateWindow(hwnd)		
-	return win32.MessageLoop()
+local NOT_HANDLED = 0xffffffff
+
+local function map_wndproc(handlers)
+	return function(hwnd, msg, wparam, lparam)
+		local f = handlers[msg]
+		if f ~= nil then
+			handled, result = f(hwnd, msg, wparam, lparam)
+			if handled then
+				return result
+			end
+		end
+		return NOT_HANDLED
+	end
 end
+
+local wnd_procs = {}
+
+local function DefWindowProc(hwnd, msg, wparam, lparam)
+	local handler = wnd_procs[hwnd]
+	local result  = NOT_HANDLED
+	if msg == winnt.WM_NCCREATE and lparam ~= 0 then
+		local lpc = ffi.cast("CREATESTRUCTA*", lparam)
+		handler = ffi.cast("WNDPROC", lpc.lpCreateParams)
+		wnd_procs[hwnd] = handler 
+	end
+	if handler ~= nil then
+		pres, res = pcall(handler, hwnd, msg, wparam, lparam)
+		if pres then
+			result = res
+		else
+			println(res)
+		end 
+	end
+	--println({hwnd, msg, wparam, lparam, result=result})
+	if result ~= NOT_HANDLED then
+		return result or 0
+	end
+	return user32.DefWindowProcA(hwnd, msg, wparam, lparam)
+end
+
+local cbDefWindowProc = ffi.cast("WNDPROC", DefWindowProc)
+
+local function window_create(class, handlers, title)
+	local clzName     = class
+	local clz         = ffi.new("WNDCLASSEXA")
+	clz.cbSize        = ffi.sizeof("WNDCLASSEXA")
+	clz.style         = bit.bor(CS_VREDRAW, CS_HREDRAW)
+	clz.lpfnWndProc   = cbDefWindowProc
+	clz.hInstance     = hInstance
+	clz.hIcon         = user32.LoadIconA(hInstance, winnt.IDI_APPLICATION)
+	clz.hCursor       = user32.LoadCursorA(hInstance, winnt.IDC_ARROW)
+	clz.hbrBackground = 0
+	clz.lpszClassName = clzName
+
+	local atom    = user32.RegisterClassExA(clz)
+	local wndproc = map_wndproc(handlers)
+	local cb      = ffi.cast("WNDPROC", wndproc)
+	
+	local hwnd = user32.CreateWindowExA(
+		bit.bor(winnt.WS_EX_WINDOWEDGE, 0x2000000),
+		clzName,
+		title or "WINDOW",
+		winnt.WS_OVERLAPPEDWINDOW,
+		1,1,1,1,0,0,
+		hInstance,
+		ffi.cast("LPVOID", cb))
+end
+
+local function msg_pump()
+	local msg = ffi.new("MSG")
+	while user32.GetMessageA(msg, 0, 0, 0) ~= 0 do
+		user32.TranslateMessage(msg)
+		user32.DispatchMessageA(msg)
+	end
+
+	return msg.wParam	
+end
+
+return {
+	window = window_create,
+	show   = user32.ShowWindow,
+	update = user32.UpdateWindow,
+	run    = msg_pump,
+}

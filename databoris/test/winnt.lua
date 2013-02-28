@@ -140,6 +140,7 @@ DWORD    GetFileAttributesA(LPCSTR lpFileName);
 BOOL     GetFileAttributesExA(LPCSTR lpFileName, DWORD fInfoLevelId, WIN32_FILE_ATTRIBUTE_DATA* lpFileInformation);
 BOOL     GetMessageA(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
 DWORD    GetModuleFileNameA(HMODULE hModule, LPCSTR lpFilename, DWORD nSize);
+HMODULE  GetModuleHandleA(LPCSTR lpModuleName);
 HGDIOBJ  GetStockObject(int i);
 HDC      GetWindowDC(HWND hWnd);
 BOOL     InitCommonControlsEx(const INITCOMMONCONTROLSEX *picce);

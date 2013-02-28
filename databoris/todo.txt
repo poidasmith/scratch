@@ -1,4 +1,10 @@
 
+- windows service; host main repository
+
+
+
+
+
 == launcher kernel
 
  - script bootstrapping 
@@ -11,40 +17,7 @@
  - 
  - caching, eg libgit for storage
 
-=== script bootstrapping
 
- - storage of lua scripts inside the launcher executable
- - implement link() function to load from launcher?
-  
-local codec = link(688) -- dostring (cached) from resource 688
-  
-
-=== serialization format
-
- - structure like binson, very targeted format
- - should support table,string,double,integer,boolean
- 
-          MSN      LSN  
-        +--------------------------------------------------+
-null    | 0 0 0 0  0 0 0 0 | N/A               | N/A       |
-true    | 0 0 0 0  0 0 0 1 | N/A               | N/A       |
-false   | 0 0 0 0  0 0 1 0 | N/A               | N/A       |
-int64   | 0 0 0 0  0 0 1 1 | value (8 bytes)   | N/A       |
-double  | 0 0 0 0  0 1 0 0 | value (8 bytes)   | N/A       |
-object  | x x 0 0  1 0 0 0 | len (num pairs)   | len pairs | 
-array   | x x 0 0  1 0 0 1 | len (num elems)   | len elems |
-string  | x x 0 0  1 0 1 0 | len (num bytes)   | len bytes |
-int32   | x x 0 0  1 0 1 1 | value (len bytes) | N/A       |
-raw     | x x 0 0  1 1 0 0 | len (num bytes)   | len bytes |
-        +--------------------------------------------------+
-
-nil=0x0
-true=0x1
-false=0x2
-
-
-- implement encode/decode to memory buffer
-- stream impl via table
 
 === configuration
 
@@ -60,10 +33,6 @@ false=0x2
  	
 === networking
 
- - streaming (can it be done with chunks in a table? YES)
- - clients
- 	- send block/stream
- 	- receive block/stream
  - server
  	- socket select
  	- coroutine for handles
@@ -134,5 +103,6 @@ false=0x2
 	- git
 	- wifi/bluetooth 
 	- scintilla? editor
+	- ngx/openresty for fast web server
 	
  

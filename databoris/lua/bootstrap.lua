@@ -42,6 +42,7 @@ end
 assert(loadstring(os.resource(0, 1, 692), "loaders"))()
 require "common"
 require "_main"
+require "windows.service"
 
 --println("======================")
 --debug.sethook(trace, "Slfu")
