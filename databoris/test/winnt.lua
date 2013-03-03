@@ -148,6 +148,7 @@ BOOL     InvalidateRect(HWND hWnd, const RECT *lpRect, BOOL bErase);
 HCURSOR  LoadCursorA(HINSTANCE hInstance, WORD lpCursorName);
 HICON    LoadIconA(HINSTANCE hInstance, WORD lpIconName);
 int      MessageBoxA(HANDLE hwnd, LPCSTR txt, LPCSTR cap, DWORD type);
+BOOL     MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
 void     OutputDebugStringA(LPCSTR lpOutputString);
 BOOL     Polyline(HDC hdc, const POINT *lppt, int cPoints);
 BOOL     PostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -161,6 +162,7 @@ COLORREF SetBkColor(HDC hdc, COLORREF color);
 int      SetBkMode(HDC hdc, int mode);
 BOOL     SetForegroundWindow(HWND hWnd);
 BOOL     SetMenu(HWND hWnd, HMENU hMenu);
+HWND     SetFocus(HWND hWnd);
 COLORREF SetTextColor(HDC hdc, COLORREF color);
 UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, UINT_PTR lpTimerFunc);
 BOOL     ShowWindow(HWND hWnd, int nCmdShow);
@@ -176,11 +178,16 @@ local winnt = {}
 winnt.WS_EX_WINDOWEDGE    = 0x100
 winnt.WS_EX_CLIENTEDGE    = 0x200
 winnt.WS_OVERLAPPEDWINDOW = 0xCF0000
+winnt.WS_CHILD            = 0x40000000
+winnt.WS_VISIBLE          = 0x10000000
+winnt.WS_TABSTOP          = 0x00010000
+winnt.WS_CLIPCHILDREN     = 0x02000000
 winnt.CW_USEDEFAULT       = 0x80000000
 
 -- messages
 winnt.WM_NCCREATE         = 0x0081
 winnt.WM_CREATE           = 0x0001
+winnt.WM_SETFONT          = 0x0030
 winnt.WM_CLOSE            = 0x0010
 winnt.WM_DESTROY          = 0x0002
 winnt.WM_COMMAND          = 0x0111
@@ -192,6 +199,10 @@ winnt.WM_PAINT            = 0x000F
 winnt.WM_SIZE             = 0x0005
 winnt.WM_TIMER            = 0x0113
 winnt.WM_KEYDOWN          = 0x0100
+winnt.WM_NOTIFY           = 0x004E
+winnt.WM_SETFOCUS         = 0x0007
+
+winnt.SW_SHOW=5
 
 -- icons
 winnt.IDI_APPLICATION = 32512
@@ -223,6 +234,14 @@ winnt.VK_LEFT  = 0x25
 winnt.VK_UP    = 0x26
 winnt.VK_RIGHT = 0x27
 winnt.VK_DOWN  = 0x28
+
+winnt.LOWORD = function(dword)
+	return bit.band(dword, 0xffff)
+end
+
+winnt.HIWORD = function(dword)
+	return bit.band(bit.rshift(dword, 16), 0xffff)
+end
 
 return winnt
 
