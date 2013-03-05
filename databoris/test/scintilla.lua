@@ -1,43 +1,4 @@
 
---[[
-
-	USING SCINTILLA
-
-hmod = LoadLibrary("SciLexer.DLL");
-		if (hmod==NULL)
-		{
-			MessageBox(hwndParent,
-			"The Scintilla DLL could not be loaded.",
-			"Error loading Scintilla",
-			MB_OK | MB_ICONERROR);
-		}
-		
-
-	hwndScintilla = CreateWindowEx(0,
-		"Scintilla","", WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_CLIPCHILDREN,
-		10,10,500,400,hwndParent,(HMENU)GuiID, hInstance,NULL);
-		
-	SendMessage(hwndScintilla,SCI_CREATEDOCUMENT, 0, 0);
-		
-
-case WM_NOTIFY:
-		lpnmhdr = (LPNMHDR) lParam;
-
-		if(lpnmhdr->hwndFrom==hwndScintilla)
-		{
-			switch(lpnmhdr->code)
-			{
-				case SCN_CHARADDED:
-					/* Hey, Scintilla just told me that a new */
-					/* character was added to the Edit Control.*/
-					/* Now i do something cool with that char. */
-				break;
-			}
-		}
-	break;
-			
-]]
-
 package.path = "../lua/?.lua;?.lua"
 require "common"
 
@@ -70,9 +31,10 @@ local function sci_configure(hwnd, config)
 	user32.SendMessageA(hwnd, sci.SCI_CREATEDOCUMENT, 0, 0)
 	user32.SendMessageA(hwnd, sci.SCI_SETTEXT, 0, lps(read_file("../lua/database.lua")))
 	user32.SendMessageA(hwnd, sci.SCI_CREATEDOCUMENT, 0, 0)
-	user32.SendMessageA(hwnd, sci.SCI_SETFONTQUALITY, sci.SC_EFF_QUALITY_LCD_OPTIMIZED, 0)
-	--user32.SendMessageA(hwnd, sci.SCI_SETFONTQUALITY, sci.SC_EFF_QUALITY_ANTIALIASED, 0)
+	--user32.SendMessageA(hwnd, sci.SCI_SETFONTQUALITY, sci.SC_EFF_QUALITY_LCD_OPTIMIZED, 0)
+	user32.SendMessageA(hwnd, sci.SCI_SETFONTQUALITY, sci.SC_EFF_QUALITY_ANTIALIASED, 0)
 	user32.SendMessageA(hwnd, sci.SCI_SETSCROLLWIDTHTRACKING, 1, 0)
+	user32.SendMessageA(hwnd, sci.SCI_SETTABWIDTH, 4, 0)
 	
 	-- set base styles	
 	user32.SendMessageA(hwnd, sci.SCI_STYLECLEARALL, 0, 0)
@@ -140,7 +102,7 @@ local handlers = {
 	[win.WM_SETFOCUS] = wm_setfocus,
 }
 
-local mainWin = ui.window("DBOS_main", handlers, "poyta")
+local mainWin = ui.window("DBOS_main", handlers, "poyta - lib.bootstrap.database | lib.bootstrap.common | lib.bootstrap.stream")
 
 local style = bit.bor(win.WS_CHILD, win.WS_VISIBLE, win.WS_TABSTOP, win.WS_CLIPCHILDREN)
 sciWin = user32.CreateWindowExA(0, "Scintilla", "", style, 0, 0, 0, 0, mainWin, 0, 0, nil)

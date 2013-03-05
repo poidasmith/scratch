@@ -170,6 +170,7 @@ BOOL     TextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c);
 BOOL     TranslateMessage(const MSG *lpMsg);
 BOOL     UpdateWindow(HWND hWnd);
 
+UINT ExtractIconExA(LPCSTR lpszFile,int nIconIndex,HICON *phiconLarge,HICON *phiconSmall,UINT nIcons);
 ]]
 
 local winnt = {}

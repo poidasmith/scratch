@@ -7,6 +7,7 @@ local kernel32 = ffi.load("kernel32")
 local comctl32 = ffi.load("comctl32")
 local user32   = ffi.load("user32")
 local gdi32    = ffi.load("gdi32")
+local shell32  = ffi.load("shell32")
 
 -- initialize common stuff
 local hInstance = kernel32.GetModuleHandleA(nil)
@@ -65,7 +66,11 @@ local function WindowCreate(class, handlers, title)
 	clz.style         = bit.bor(CS_VREDRAW, CS_HREDRAW)
 	clz.lpfnWndProc   = cbDefWindowProc
 	clz.hInstance     = hInstance
-	clz.hIcon         = user32.LoadIconA(hInstance, winnt.IDI_APPLICATION)
+
+	local hicl = ffi.new("HICON[1]")
+	local hics = ffi.new("HICON[1]")
+	shell32.ExtractIconExA("../src/Databoris.ico", 0, hicl, hics, 1)
+	clz.hIcon         = hics[0]
 	clz.hCursor       = user32.LoadCursorA(hInstance, winnt.IDC_ARROW)
 	clz.hbrBackground = 0
 	clz.lpszClassName = clzName
@@ -73,6 +78,7 @@ local function WindowCreate(class, handlers, title)
 	local atom    = user32.RegisterClassExA(clz)
 	local wndproc = mapWindowProc(handlers)
 	local cb      = ffi.cast("WNDPROC", wndproc)
+	
 	
 	local hwnd = user32.CreateWindowExA(
 		bit.bor(winnt.WS_EX_WINDOWEDGE, 0x2000000),

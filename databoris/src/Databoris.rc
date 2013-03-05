@@ -4,3 +4,5 @@
 1 690 "../lua/database.lua"
 1 691 "../lua/stream.lua"
 1 692 "../lua/loaders.lua"
+
+101 ICON "Databoris.ico"
