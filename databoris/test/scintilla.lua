@@ -13,6 +13,34 @@ local ui = require "uiapi"
 local sci = require "scintilla_constants"
 ffi.load "SciLexer" 
 
+ffi.cdef[[
+typedef struct tagSCNotification {
+	HWND hwndFrom;
+	UINT_PTR idFrom;
+	UINT code;
+	int position;
+	int ch;
+	int modifiers;
+	int modificationType;
+	const char *text;
+	int length;		
+	int linesAdded;	
+	int message;	
+	UINT_PTR wParam;	
+	LONG_PTR lParam;	
+	int line;		
+	int foldLevelNow;
+	int foldLevelPrev;
+	int margin;
+	int listType;
+	int x;
+	int y;
+	int token;
+	int annotationLinesAdded;
+	int updated;
+} SCNotification;
+]]
+
 local function read_file(f)
 	local f = io.open(f, "r")
 	local content = f:read("*all")
@@ -66,6 +94,7 @@ local function sci_configure(hwnd, config)
 end
 
 local sciWin
+local sciProc
 
 local function wm_setfocus(hwnd, msg, wparam, lparam)
 	user32.SetFocus(sciWin)
@@ -91,7 +120,18 @@ local function wm_destroy(...)
 end
 
 local function wm_notify(hwnd, msg, wparam, lparam)
-	--printf("notify %s, %s, %s, %s", hwnd, msg, wparam, lparam)
+	local pscin = ffi.cast("SCNotification*", lparam)
+	if pscin.hwndFrom == sciWin and pscin.code ~= 2013 then
+		printf("notify %s, %s", pscin.code, sci.reverse[pscin.code])
+	end
+end
+
+local function wm_keydown(hwnd, msg, wparam, lparam)
+	printf("keydown: %s", wparam)
+	if wparam == win.VK_RIGHT then
+		return true
+	end
+	--printf("%s", wparam)
 end
 
 local handlers = {
@@ -100,12 +140,18 @@ local handlers = {
 	[win.WM_DESTROY]  = wm_destroy,
 	[win.WM_NOTIFY]   = wm_notify,
 	[win.WM_SETFOCUS] = wm_setfocus,
+	[win.WM_KEYDOWN]  = wm_keydown,
 }
 
-local mainWin = ui.window("DBOS_main", handlers, "poyta - lib.bootstrap.database | lib.bootstrap.common | lib.bootstrap.stream")
+local sciHandlers = {
+	[win.WM_KEYDOWN]  = wm_keydown,
+}
+
+local mainWin = ui.window("DBOS_main", handlers, "DBOS - lib.bootstrap.database | lib.bootstrap.common | lib.bootstrap.stream")
 
 local style = bit.bor(win.WS_CHILD, win.WS_VISIBLE, win.WS_TABSTOP, win.WS_CLIPCHILDREN)
 sciWin = user32.CreateWindowExA(0, "Scintilla", "", style, 0, 0, 0, 0, mainWin, 0, 0, nil)
+ui.subclass(sciWin, sciHandlers)
 user32.MoveWindow(mainWin, 10, 10, 1200, 800, true)
 
 sci_configure(sciWin, sciConfig)

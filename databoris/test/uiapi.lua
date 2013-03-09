@@ -44,6 +44,7 @@ local function defWindowProc(hwnd, msg, wparam, lparam)
 		if pres then
 			result = res
 		else
+			-- TODO: fix this somehow
 			println(res)
 		end 
 	end
@@ -77,8 +78,7 @@ local function WindowCreate(class, handlers, title)
 
 	local atom    = user32.RegisterClassExA(clz)
 	local wndproc = mapWindowProc(handlers)
-	local cb      = ffi.cast("WNDPROC", wndproc)
-	
+	local cb      = ffi.cast("WNDPROC", wndproc)	
 	
 	local hwnd = user32.CreateWindowExA(
 		bit.bor(winnt.WS_EX_WINDOWEDGE, 0x2000000),
@@ -92,6 +92,34 @@ local function WindowCreate(class, handlers, title)
 	return hwnd
 end
 --
+local function WindowSubclass(hwnd, handlers)
+	local prevProc
+	local function proc(hwnd, msg, wparam, lparam)
+		local f = handlers[msg]
+		local result = false
+		if f ~= nil then
+			pres, res = pcall(f, hwnd, msg, wparam, lparam)
+			if pres then
+				result = res and res ~= 0 
+			else
+				print(res)
+			end 
+		end
+		if result then
+			return result
+		end
+		if prevProc then
+			return user32.CallWindowProcA(prevProc, hwnd, msg, wparam, lparam)
+		else
+			return user32.DefWindowProcA(hwnd, msg, wparam, lparam)
+		end
+	end
+	local cbProc = ffi.cast("WNDPROC", proc)
+	prevProc = user32.SetWindowLongA(hwnd, winnt.GWLP_WNDPROC, ffi.cast("LONG_PTR", cbProc))
+	prevProc = ffi.cast("WNDPROC", prevProc)
+	return prevProc
+end
+--
 local function MsgPump()
 	local msg = ffi.new("MSG")
 	while user32.GetMessageA(msg, 0, 0, 0) ~= 0 do
@@ -103,8 +131,9 @@ local function MsgPump()
 end
 --------------------------------------------------------------------------------
 return {
-	window = WindowCreate,
-	show   = user32.ShowWindow,
-	update = user32.UpdateWindow,
-	run    = MsgPump,
+	window   = WindowCreate,
+	subclass = WindowSubclass,
+	show     = user32.ShowWindow,
+	update   = user32.UpdateWindow,
+	run      = MsgPump,
 }

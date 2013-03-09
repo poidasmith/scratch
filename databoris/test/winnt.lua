@@ -104,7 +104,11 @@ typedef struct _FILETIME {
     DWORD dwLowDateTime;
     DWORD dwHighDateTime;
 } FILETIME;
-
+typedef struct tagNMHDR {
+  HWND     hwndFrom;
+  UINT_PTR idFrom;
+  UINT     code;
+} NMHDR;
 typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
   DWORD    dwFileAttributes;
   FILETIME ftCreationTime;
@@ -116,6 +120,7 @@ typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
 
 BOOL     AppendMenuA(HMENU hMenu, DWORD uFlags, DWORD uIDNewItem, LPCSTR lpNewItem);
 HDC      BeginPaint(HMENU hWnd, PAINTSTRUCT *lpPaint);
+LRESULT  CallWindowProcA(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 HFONT    CreateFontA(int nHeight, int nWidth, int nEscapement, int nOrientation, int fnWeight, DWORD fdwItalic, DWORD fdwUnderline, DWORD fdwStrikeOut, DWORD fdwCharSet, DWORD fdwOutputPrecision, DWORD fdwClipPrecision, DWORD fdwQuality, DWORD fdwPitchAndFamily, LPCSTR lpszFace);
 HMENU    CreateMenu();
 HPEN     CreatePen(int fnPenStyle, int nWidth, COLORREF crColor);
@@ -165,6 +170,7 @@ BOOL     SetMenu(HWND hWnd, HMENU hMenu);
 HWND     SetFocus(HWND hWnd);
 COLORREF SetTextColor(HDC hdc, COLORREF color);
 UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, UINT_PTR lpTimerFunc);
+LONG_PTR SetWindowLongA(HWND hWnd, int nIndex, LONG_PTR dwNewLong);
 BOOL     ShowWindow(HWND hWnd, int nCmdShow);
 BOOL     TextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c);
 BOOL     TranslateMessage(const MSG *lpMsg);
@@ -205,6 +211,7 @@ winnt.WM_SETFOCUS         = 0x0007
 
 winnt.SW_SHOW=5
 
+winnt.GWLP_WNDPROC = -4
 -- icons
 winnt.IDI_APPLICATION = 32512
 

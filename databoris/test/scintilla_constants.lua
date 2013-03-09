@@ -929,4 +929,11 @@ sci.SCE_LUA_WORD7 = 18
 sci.SCE_LUA_WORD8 = 19
 sci.SCE_LUA_LABEL = 20
 
+
+local reverse = {}
+for k,v in pairs(sci) do
+	reverse[v] = k
+end
+sci.reverse = reverse
+
 return sci
