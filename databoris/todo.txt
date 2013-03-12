@@ -87,10 +87,7 @@
  - UI widgets are different views/editors of tables
  	 - containers are resursive holders of other widgets
  	 - layouts?
- 	 
   - compound layouts, eg higher level desc of widget tree
-  
-  
   - can we just embed chromium?
   		- and then embed the text,table editors as plugins?
   - convert from css,html,javascript to internal format?
@@ -100,9 +97,76 @@
 
 	- chromium
 	- vlc library (embed videos)
-	- git
+	- git (sourcedb, bootstrap)
 	- wifi/bluetooth 
 	- scintilla? editor
 	- ngx/openresty for fast web server
+	- redis, tokyo cabinet for data (and subdbs)
+ 
+=== IDE structure
+
+	package.loaders = { 
+		buffer_loader, 
+		res_loader,
+		database_loader,
+	}, 
+	source_cache = {
+		["lib.bootstrap.database"] = {
+			db = "res",
+		},
+		["lib.bootstrap.common"] = {
+			db = "res",
+		},
+		["lib.bootstrap.common"] = {
+			db = "res",
+		},
+	}
+	object_cache = {}	
+	buffers = {
+		["lib.bootstrap.database"] = {
+			modified = false,
+			editor   = {...}
+		}
+	},
+	project = { subdb },
+	console = {
+		buffer,
+		vars = {}
+	}
 	
+=== Code Annotations
+
+  - use comments to store tables of annotation data
+  - on push/save we parse file and execute annotations to gen meta
+  - can use for runtime type checking in debug/trace mode
+  
+--< types{ a=int(), b=str() }
+--< returns{ str(), null() }
+local function test(a, b)
+end 
+
+local function test(string a, string b)
+end
+
+	
+=== Console Functions
+
+sourcedb, 
+launches
+	- view state 
+debugger
+	- set breakpoint, 
+
+- buffers() : list open editors
+- edit("lib.bootstrap.common") : open source for editing
+- save(buffers.current)
+- delete(buffer)
+- print(meta(buffer))
+- eval(buffer)
+
+
+
+
+
+
  

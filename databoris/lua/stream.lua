@@ -353,6 +353,7 @@ end
 
 local file_stream = stream:new()
 
+-- { filename=str(), access=int(), create_disp=int() }
 function file_stream:new(filename, access, create_disp, o)
 	local o = o or {}
 	o.handle = kernel32.CreateFileA(
@@ -488,6 +489,8 @@ function socket_stream.connect(host, port)
 	return socket_stream:new(raw_socket)
 end
 
+-- bind to port
+-- d{ port=int(), _host=str() }
 function socket_stream.bind(port, host)
 	socket_stream.startup()
 	

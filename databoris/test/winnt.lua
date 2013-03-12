@@ -206,6 +206,8 @@ winnt.WM_PAINT            = 0x000F
 winnt.WM_SIZE             = 0x0005
 winnt.WM_TIMER            = 0x0113
 winnt.WM_KEYDOWN          = 0x0100
+winnt.WM_CHAR             = 0x0102
+winnt.WM_SYSKEYDOWN       = 0x0104
 winnt.WM_NOTIFY           = 0x004E
 winnt.WM_SETFOCUS         = 0x0007
 
@@ -235,7 +237,8 @@ winnt.OPAQUE      = 2
 winnt.PS_SOLID = 0
 
 winnt.VK_RIGHT = 0x27
-winnt.VK_NEXT  = 0x22
+winnt.VK_PGUP  = 0x21
+winnt.VK_PGDOWN= 0x22
 winnt.VK_END   = 0x23
 winnt.VK_HOME  = 0x24
 winnt.VK_LEFT  = 0x25

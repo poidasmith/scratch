@@ -44,8 +44,7 @@ local function defWindowProc(hwnd, msg, wparam, lparam)
 		if pres then
 			result = res
 		else
-			-- TODO: fix this somehow
-			println(res)
+			print(res)
 		end 
 	end
 	--println({hwnd, msg, wparam, lparam, result=result})

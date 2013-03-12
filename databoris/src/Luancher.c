@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <lua.h>
-#include <luaxlib.h>
+#include <lauxlib.h>
 #include <lualib.h>
 #pragma comment(lib, "lua51.lib")
 
@@ -21,7 +21,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		freopen("CONOUT$", "w", stderr);
 		printf("\n");
 	}
-	res = luaL_dofile(1, fn); // execute the lua file
+	res = luaL_dofile(l, fn); // execute the lua file
 	lua_close(l);
 	return res;
 }
