@@ -72,7 +72,7 @@ local function WindowCreate(class, handlers, title)
 	shell32.ExtractIconExA("../src/Databoris.ico", 0, hicl, hics, 1)
 	clz.hIcon         = hics[0]
 	clz.hCursor       = user32.LoadCursorA(hInstance, winnt.IDC_ARROW)
-	clz.hbrBackground = 0
+	clz.hbrBackground = gdi32.CreateSolidBrush(0x555555);
 	clz.lpszClassName = clzName
 
 	local atom    = user32.RegisterClassExA(clz)

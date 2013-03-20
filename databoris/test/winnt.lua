@@ -143,6 +143,7 @@ BOOL     GetClientRect(HWND hWnd, RECT* lpRect);
 DWORD    GetCurrentDirectoryA(DWORD nBufferLength, LPCSTR lpBuffer);
 DWORD    GetFileAttributesA(LPCSTR lpFileName);
 BOOL     GetFileAttributesExA(LPCSTR lpFileName, DWORD fInfoLevelId, WIN32_FILE_ATTRIBUTE_DATA* lpFileInformation);
+short    GetKeyState(int nVirtKey);
 BOOL     GetMessageA(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterMax);
 DWORD    GetModuleFileNameA(HMODULE hModule, LPCSTR lpFilename, DWORD nSize);
 HMODULE  GetModuleHandleA(LPCSTR lpModuleName);
@@ -246,12 +247,27 @@ winnt.VK_UP    = 0x26
 winnt.VK_RIGHT = 0x27
 winnt.VK_DOWN  = 0x28
 
+winnt.VK_LSHIFT  =0xA0
+winnt.VK_RSHIFT  =0xA1
+winnt.VK_LCONTROL=0xA2
+winnt.VK_RCONTROL=0xA3
+winnt.VK_LMENU   =0xA4
+winnt.VK_RMENU   =0xA5
+
 winnt.LOWORD = function(dword)
 	return bit.band(dword, 0xffff)
 end
 
 winnt.HIWORD = function(dword)
 	return bit.band(bit.rshift(dword, 16), 0xffff)
+end
+
+function winnt.GetKeyStates(lparam)
+	local user32 = ffi.load "user32"
+	local shift = bit.bor(user32.GetKeyState(winnt.VK_LSHIFT), user32.GetKeyState(winnt.VK_RSHIFT)) < 0
+	local ctrl  = bit.bor(user32.GetKeyState(winnt.VK_LCONTROL), user32.GetKeyState(winnt.VK_RCONTROL)) < 0
+	local alt   = bit.band(lparam, 0x20000000) ~= 0
+	return shift, ctrl, alt
 end
 
 return winnt

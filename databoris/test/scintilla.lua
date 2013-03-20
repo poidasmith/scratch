@@ -5,6 +5,7 @@ require "common"
 setenv("PATH", env("%PATH%;../build/Databoris-Debug/"))
 
 local ffi    = require "ffi"
+local bit    = require "bit"
 local user32 = ffi.load "user32"
 local win    = require "winnt"
 local user32 = ffi.load "user32"
@@ -56,7 +57,6 @@ local sci = {
 		width  = 400,
 		height = 800,
 		tabs   = { width = 4 },
-		text   = read_file("../lua/database.lua"),
 		style  = { 
 			fore      = 0xffffff, 
 			back      = 0x242424, 
@@ -81,6 +81,9 @@ local sci = {
 	},
 }
 
+local function lps(s) return ffi.cast("LPARAM", s) end  
+local function wps(s) return ffi.cast("WPARAM", s) end  
+
 local function sci_gettextinfo(sci)
 	sci.position = user32.SendMessageA(sci.hwnd, scc.SCI_GETCURRENTPOS, 0, 0)
 	sci.length   = user32.SendMessageA(sci.hwnd, scc.SCI_GETLENGTH, 0, 0)
@@ -88,13 +91,17 @@ local function sci_gettextinfo(sci)
 	sci.line     = user32.SendMessageA(sci.hwnd, scc.SCI_LINEFROMPOSITION, sci.position, 0)
 end
 
+local function sci_settext(hwnd, text)
+	user32.SendMessageA(hwnd, scc.SCI_SETTEXT, 0, lps(text))
+end
+
 local function sci_configure(hwnd, config)
-	local function lps(s) return ffi.cast("LPARAM", s) end  
-	local function wps(s) return ffi.cast("WPARAM", s) end  
 	user32.SendMessageA(hwnd, scc.SCI_CREATEDOCUMENT, 0, 0)
-	user32.SendMessageA(hwnd, scc.SCI_SETTEXT, 0, lps(config.text))
 	user32.SendMessageA(hwnd, scc.SCI_SETFONTQUALITY, scc.SC_EFF_QUALITY_ANTIALIASED, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETSCROLLWIDTHTRACKING, 1, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETSCROLLWIDTH , 5, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETVSCROLLBAR, 0, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETHSCROLLBAR, 0, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETTABWIDTH, config.tabs.width or 4, 0)
 	
 	-- set base styles	
@@ -135,7 +142,8 @@ local function wm_size(hwnd, msg, wparam, lparam)
 	local width  = win.LOWORD(lparam)
 	local height = win.HIWORD(lparam)
 	printf("w:%s, h%s", width, height)
-	user32.MoveWindow(sci.hwnd, 0, 0, width, height, true)
+	user32.MoveWindow(sci.hwnd, 0, 0, 2 * width / 3, height, true)
+	user32.MoveWindow(sci.hwnd2, 2 * width / 3 + 1, 0, width / 3, height, true)
 end
 
 local function wm_close(hwnd, msg, wparam, lparam)
@@ -157,8 +165,18 @@ local function wm_notify(hwnd, msg, wparam, lparam)
 end
 
 local function wm_keydown(hwnd, msg, wparam, lparam)
-	printf("keydown: %s %s", wparam, lparam)
-	if wparam == 190 or wparam == 46 then
+	-- F9 = evaluate whole buffer, Shift-F9 = evaluate selection, Alt-F9 = evaluate from current line 
+	-- 
+	local shift, ctrl, alt = win.GetKeyStates(lparam)
+	printf("keydown: %s %x shift=%s ctrl=%s alt=%s", wparam, lparam, shift, ctrl, alt)
+	if wparam == 120 then
+		if shift then
+			printf("evaluate selection");	
+		elseif alt then
+			printf("evaluate from current line")
+		else
+			printf("evaluate buffer")
+		end
 		return true
 	end
 	sci_gettextinfo(sci)
@@ -185,10 +203,16 @@ local mainWin = ui.window("DBOS_main", handlers, "DBOS - lib.bootstrap.database 
 local style = bit.bor(win.WS_CHILD, win.WS_VISIBLE, win.WS_TABSTOP, win.WS_CLIPCHILDREN)
 sci.hwnd = user32.CreateWindowExA(0, "Scintilla", "", style, 0, 0, 0, 0, mainWin, 0, 0, nil)
 ui.subclass(sci.hwnd, sci.handlers)
-user32.MoveWindow(mainWin, 10, 300, 1200, 650, true)
-
 sci_configure(sci.hwnd, sci.config)
+sci_settext(sci.hwnd, read_file("../lua/database.lua"))
 
+sci.hwnd2 = user32.CreateWindowExA(0, "Scintilla", "", style, 0, 0, 0, 0, mainWin, 0, 0, nil)
+ui.subclass(sci.hwnd2, sci.handlers)
+sci_configure(sci.hwnd2, sci.config)
+
+
+
+user32.MoveWindow(mainWin, 10, 300, 1200, 650, true)
 ui.show(mainWin, win.SW_SHOW)
 ui.update(mainWin)
 ui.run() 

@@ -166,6 +166,14 @@ debugger
 
 
 
+=== structure
+
+- think about using subclassing (wndprocs) chaining to implement styling, keyhandling
+- side-by-side editor windows, LHS = editor/buffer, RHS = output
+- ui components handle streams/events
+- editor is stream of editing events
+- console display stream of text (obviously; but subset of edit events
+- table is stream of table mutation events
 
 
 
