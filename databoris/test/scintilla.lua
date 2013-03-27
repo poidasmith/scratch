@@ -12,35 +12,6 @@ local user32 = ffi.load "user32"
 local gdi32  = ffi.load "gdi32"
 local ui     = require "uiapi"
 local scc    = require "const_scintilla"
-ffi.load "SciLexer" 
-
-ffi.cdef[[
-typedef struct tagSCNotification {
-	HWND hwndFrom;
-	UINT_PTR idFrom;
-	UINT code;
-	int position;
-	int ch;
-	int modifiers;
-	int modificationType;
-	const char *text;
-	int length;		
-	int linesAdded;	
-	int message;	
-	UINT_PTR wParam;	
-	LONG_PTR lParam;	
-	int line;		
-	int foldLevelNow;
-	int foldLevelPrev;
-	int margin;
-	int listType;
-	int x;
-	int y;
-	int token;
-	int annotationLinesAdded;
-	int updated;
-} SCNotification;
-]]
 
 local function read_file(f)
 	local f = io.open(f, "r")
@@ -56,26 +27,26 @@ local sci = {
 	config = {
 		width  = 400,
 		height = 800,
-		tabs   = { width = 4 },
+		tabs   = { width = 2 },
+		font_face = "Bitstream Vera Sans Mono", 
+		font_size = 10,
+		keywords  = "local end for if then else elseif do return nil function",
 		style  = { 
-			fore      = 0xffffff, 
-			back      = 0x242424, 
-			font_face = "Bitstream Vera Sans Mono", 
-			font_size = 10,
-			comment   = 0x808080,
-			string    = 0xFED8A9,
-			keyword   = 0xE4C9C9,
-			keywords  = "local end for if then else elseif do return nil function",
+			fore       = 0xe0e0e0, 
+			back       = 0x242424, 
+			comment    = 0x808080,
+			string     = 0xFED8A9,
+			keyword    = 0xE4C9C9,
+			sel_fore   = 0xffffff, 
+			sel_back   = 0x804000, 
+			caret_fore = 0xaaaa88, 
+			line_back  = 0x000000, 
 		},
 		caret  = { 
 			line_visible = true, 
-			line_back    = 0, 
-			fore         = 0xaaaa88, 
 			width        = 2 
 		},
 		selection = { 
-			fore       = 0xffffff, 
-			back       = 0x804000, 
 			eol_filled = true 
 		},
 	},
@@ -83,6 +54,17 @@ local sci = {
 
 local function lps(s) return ffi.cast("LPARAM", s) end  
 local function wps(s) return ffi.cast("WPARAM", s) end  
+
+function print(s)
+	if sci.hwnd2 then
+		user32.SendMessageA(sci.hwnd2, scc.SCI_ADDTEXT, #s, lps(s))
+		user32.SendMessageA(sci.hwnd2, scc.SCI_ADDTEXT, 1, lps("\n"))
+		local pos = user32.SendMessageA(sci.hwnd2, scc.SCI_GETCURRENTPOS, 0, 0)
+		local length = user32.SendMessageA(sci.hwnd2, scc.SCI_GETLENGTH, 0, 0)
+		local line = user32.SendMessageA(sci.hwnd2, scc.SCI_LINEFROMPOSITION, length, 0)
+		user32.SendMessageA(sci.hwnd2, scc.SCI_GOTOLINE, line, 0)
+	end
+end
 
 local function sci_gettextinfo(sci)
 	sci.position = user32.SendMessageA(sci.hwnd, scc.SCI_GETCURRENTPOS, 0, 0)
@@ -98,8 +80,8 @@ end
 local function sci_configure(hwnd, config)
 	user32.SendMessageA(hwnd, scc.SCI_CREATEDOCUMENT, 0, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETFONTQUALITY, scc.SC_EFF_QUALITY_ANTIALIASED, 0)
-	user32.SendMessageA(hwnd, scc.SCI_SETSCROLLWIDTHTRACKING, 1, 0)
-	user32.SendMessageA(hwnd, scc.SCI_SETSCROLLWIDTH , 5, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETSCROLLWIDTHTRACKING, 0, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETSCROLLWIDTH, 5, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETVSCROLLBAR, 0, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETHSCROLLBAR, 0, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETTABWIDTH, config.tabs.width or 4, 0)
@@ -107,8 +89,8 @@ local function sci_configure(hwnd, config)
 	-- set base styles	
 	user32.SendMessageA(hwnd, scc.SCI_STYLECLEARALL, 0, 0)
 	for style=0,scc.STYLE_MAX do
-		user32.SendMessageA(hwnd, scc.SCI_STYLESETFONT, style, lps(config.style.font_face))
-		user32.SendMessageA(hwnd, scc.SCI_STYLESETSIZE, style, config.style.font_size)
+		user32.SendMessageA(hwnd, scc.SCI_STYLESETFONT, style, lps(config.font_face))
+		user32.SendMessageA(hwnd, scc.SCI_STYLESETSIZE, style, config.font_size)
 		user32.SendMessageA(hwnd, scc.SCI_STYLESETFORE, style, config.style.fore)
 		user32.SendMessageA(hwnd, scc.SCI_STYLESETBACK, style, config.style.back)			
 	end
@@ -121,16 +103,16 @@ local function sci_configure(hwnd, config)
 	user32.SendMessageA(hwnd, scc.SCI_STYLESETFORE, scc.SCE_LUA_STRING,        config.style.string)
 	user32.SendMessageA(hwnd, scc.SCI_STYLESETFORE, scc.SCE_LUA_LITERALSTRING, config.style.string)
 	user32.SendMessageA(hwnd, scc.SCI_STYLESETFORE, scc.SCE_LUA_WORD,          config.style.keyword)
-	user32.SendMessageA(hwnd, scc.SCI_SETKEYWORDS, 0, wps(config.style.keywords))
+	user32.SendMessageA(hwnd, scc.SCI_SETKEYWORDS, 0, wps(config.keywords))
 	
 	-- setup current line highlighting, caret and selection	
 	user32.SendMessageA(hwnd, scc.SCI_SETCARETLINEVISIBLE, config.caret.line_visible and 1 or 0, 0)
 	user32.SendMessageA(hwnd, scc.SCI_SETCARETLINEBACK, 0, 0)
-	user32.SendMessageA(hwnd, scc.SCI_SETCARETFORE, 0xaaaa88, 0)
-	user32.SendMessageA(hwnd, scc.SCI_SETCARETWIDTH, 2, 0)
-	user32.SendMessageA(hwnd, scc.SCI_SETSELFORE, 1, 0xffffff)
-	user32.SendMessageA(hwnd, scc.SCI_SETSELBACK, 1, 0x804000)
-	user32.SendMessageA(hwnd, scc.SCI_SETSELEOLFILLED, 1, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETCARETFORE, config.style.caret_fore, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETCARETWIDTH, 3, 0)
+	user32.SendMessageA(hwnd, scc.SCI_SETSELFORE, 1, config.style.sel_fore)
+	user32.SendMessageA(hwnd, scc.SCI_SETSELBACK, 1, config.style.sel_back)
+	user32.SendMessageA(hwnd, scc.SCI_SETSELEOLFILLED, config.selection.eol_filled and 1 or 0, 0)
 end
 
 local function wm_setfocus(hwnd, msg, wparam, lparam)
@@ -201,17 +183,21 @@ sci.handlers = {
 local mainWin = ui.window("DBOS_main", handlers, "DBOS - lib.bootstrap.database | lib.bootstrap.common | lib.bootstrap.stream")
 
 local style = bit.bor(win.WS_CHILD, win.WS_VISIBLE, win.WS_TABSTOP, win.WS_CLIPCHILDREN)
+
+-- create editor window
+ffi.load "SciLexer" 
 sci.hwnd = user32.CreateWindowExA(0, "Scintilla", "", style, 0, 0, 0, 0, mainWin, 0, 0, nil)
 ui.subclass(sci.hwnd, sci.handlers)
 sci_configure(sci.hwnd, sci.config)
 sci_settext(sci.hwnd, read_file("../lua/database.lua"))
 
+-- create output window
 sci.hwnd2 = user32.CreateWindowExA(0, "Scintilla", "", style, 0, 0, 0, 0, mainWin, 0, 0, nil)
-ui.subclass(sci.hwnd2, sci.handlers)
+--ui.subclass(sci.hwnd2, sci.handlers)
 sci_configure(sci.hwnd2, sci.config)
+sci_settext(sci.hwnd2, "")
 
-
-
+-- run loop
 user32.MoveWindow(mainWin, 10, 300, 1200, 650, true)
 ui.show(mainWin, win.SW_SHOW)
 ui.update(mainWin)

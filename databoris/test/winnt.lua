@@ -6,6 +6,7 @@ typedef unsigned short WORD;
 typedef long           LONG;
 typedef long           LONG_PTR;
 typedef long           LRESULT;
+typedef long           LSTATUS;
 typedef unsigned int   UINT;
 typedef unsigned int   UINT_PTR;
 typedef long           HANDLE;
@@ -16,13 +17,16 @@ typedef long           HFONT;
 typedef long           HGDIOBJ;
 typedef long           HICON;
 typedef long           HINSTANCE;
+typedef long           HKEY;
 typedef long           HMENU;
 typedef long           HMODULE;
 typedef long           HPEN;
 typedef long           HRGN;
 typedef long           HWND;
+typedef long           SC_HANDLE;
 typedef void*          LPVOID;
 typedef unsigned long  DWORD;
+typedef unsigned long* LPDWORD;
 typedef const char*    LPCSTR;
 typedef int            BOOL;
 typedef int            COLORREF;
@@ -118,6 +122,32 @@ typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
   DWORD    nFileSizeLow;
 } WIN32_FILE_ATTRIBUTE_DATA;
 
+typedef struct tagSCNotification {
+	HWND hwndFrom;
+	UINT_PTR idFrom;
+	UINT code;
+	int position;
+	int ch;
+	int modifiers;
+	int modificationType;
+	const char *text;
+	int length;		
+	int linesAdded;	
+	int message;	
+	UINT_PTR wParam;	
+	LONG_PTR lParam;	
+	int line;		
+	int foldLevelNow;
+	int foldLevelPrev;
+	int margin;
+	int listType;
+	int x;
+	int y;
+	int token;
+	int annotationLinesAdded;
+	int updated;
+} SCNotification;
+
 BOOL     AppendMenuA(HMENU hMenu, DWORD uFlags, DWORD uIDNewItem, LPCSTR lpNewItem);
 HDC      BeginPaint(HMENU hWnd, PAINTSTRUCT *lpPaint);
 LRESULT  CallWindowProcA(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -125,9 +155,11 @@ HFONT    CreateFontA(int nHeight, int nWidth, int nEscapement, int nOrientation,
 HMENU    CreateMenu();
 HPEN     CreatePen(int fnPenStyle, int nWidth, COLORREF crColor);
 HMENU    CreatePopupMenu();
+SC_HANDLE CreateServiceA(SC_HANDLE hSCManager, LPCSTR lpServiceName, LPCSTR lpDisplayName, DWORD dwDesiredAccess, DWORD dwServiceType, DWORD dwStartType, DWORD dwErrorControl, LPCSTR lpBinaryPathName, LPCSTR lpLoadOrderGroup, LPDWORD lpdwTagId, LPCSTR lpDependencies, LPCSTR lpServiceStartName, LPCSTR lpPassword);
 HWND     CreateStatusWindowA(LONG style, LPCSTR lpszText, HWND hwndParent, UINT wID);
 HBRUSH   CreateSolidBrush(COLORREF color);
 HWND     CreateWindowExA(DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y, int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
+BOOL     CloseServiceHandle(SC_HANDLE hSCObject);
 LRESULT  DefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 BOOL     DestroyWindow(HWND hWnd);
 LRESULT  DispatchMessageA(const MSG *lpMsg);           
@@ -136,6 +168,7 @@ BOOL     DrawFocusRect(HDC hDC, const RECT* lprc);
 BOOL     DrawFrameControl(HDC hdc, RECT* lprc, UINT uType, UINT uState);         
 int      DrawTextA(HDC hdc, LPCSTR lpchText, int cchText, RECT* lprc, UINT format);
 BOOL     EndPaint(HWND hWnd, const PAINTSTRUCT *lpPaint);
+UINT     ExtractIconExA(LPCSTR lpszFile,int nIconIndex,HICON *phiconLarge,HICON *phiconSmall,UINT nIcons);
 int      FillRect(HDC hDC, const RECT* lprc, HBRUSH hbr);
 COLORREF GetBkColor(HDC hdc);
 int      GetBkMode(HDC hdc);
@@ -155,6 +188,7 @@ HCURSOR  LoadCursorA(HINSTANCE hInstance, WORD lpCursorName);
 HICON    LoadIconA(HINSTANCE hInstance, WORD lpIconName);
 int      MessageBoxA(HANDLE hwnd, LPCSTR txt, LPCSTR cap, DWORD type);
 BOOL     MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
+SC_HANDLE OpenSCManagerA(LPCSTR lpMachineName, LPCSTR lpDatabaseName, DWORD dwDesiredAccess);
 void     OutputDebugStringA(LPCSTR lpOutputString);
 BOOL     Polyline(HDC hdc, const POINT *lppt, int cPoints);
 BOOL     PostMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -162,6 +196,8 @@ void     PostQuitMessage(int nExitCode);
 BOOL     Rectangle(HDC hdc, int left, int top, int right, int bottom);
 BOOL     RedrawWindow(HWND hWnd, const RECT *lprcUpdate, HRGN hrgnUpdate, UINT flags);
 ATOM     RegisterClassExA(const WNDCLASSEXA *);
+LSTATUS  RegOpenKeyA(HKEY hKey, LPCSTR lpSubKey, HKEY* phkResult);
+LSTATUS  RegSetValueExA(HKEY hKey, LPCSTR lpValueName, DWORD Reserved, DWORD dwType, const BYTE* lpData, DWORD cbData);
 HGDIOBJ  SelectObject(HDC hdc, HGDIOBJ h);
 LRESULT  SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 COLORREF SetBkColor(HDC hdc, COLORREF color);
@@ -177,40 +213,47 @@ BOOL     TextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c);
 BOOL     TranslateMessage(const MSG *lpMsg);
 BOOL     UpdateWindow(HWND hWnd);
 
-UINT ExtractIconExA(LPCSTR lpszFile,int nIconIndex,HICON *phiconLarge,HICON *phiconSmall,UINT nIcons);
 ]]
 
-local winnt = {}
+local winnt = {
+	-- styles
+	WS_EX_WINDOWEDGE    = 0x100,
+	WS_EX_CLIENTEDGE    = 0x200,
+	WS_OVERLAPPEDWINDOW = 0xCF0000,
+	WS_CHILD            = 0x40000000,
+	WS_VISIBLE          = 0x10000000,
+	WS_TABSTOP          = 0x00010000,
+	WS_CLIPCHILDREN     = 0x02000000,
+	CW_USEDEFAULT       = 0x80000000,
 
--- styles
-winnt.WS_EX_WINDOWEDGE    = 0x100
-winnt.WS_EX_CLIENTEDGE    = 0x200
-winnt.WS_OVERLAPPEDWINDOW = 0xCF0000
-winnt.WS_CHILD            = 0x40000000
-winnt.WS_VISIBLE          = 0x10000000
-winnt.WS_TABSTOP          = 0x00010000
-winnt.WS_CLIPCHILDREN     = 0x02000000
-winnt.CW_USEDEFAULT       = 0x80000000
+	-- messages
+	WM_NCCREATE         = 0x0081,
+	WM_CREATE           = 0x0001,
+	WM_SETFONT          = 0x0030,
+	WM_CLOSE            = 0x0010,
+	WM_DESTROY          = 0x0002,
+	WM_COMMAND          = 0x0111,
+	WM_LBUTTONDOWN      = 0x0201,
+	WM_RBUTTONDOWN      = 0x0204,
+	WM_MOUSEWHEEL       = 0x020A,
+	WM_ERASEBKGND		= 0x0014,
+	WM_PAINT            = 0x000F,
+	WM_SIZE             = 0x0005,
+	WM_TIMER            = 0x0113,
+	WM_KEYDOWN          = 0x0100,
+	WM_CHAR             = 0x0102,
+	WM_SYSKEYDOWN       = 0x0104,
+	WM_NOTIFY           = 0x004E,
+	WM_SETFOCUS         = 0x0007,
+	
+	-- service start type
+	SERVICE_BOOT_START   = 0x00000000,
+	SERVICE_SYSTEM_START = 0x00000001,
+	SERVICE_AUTO_START   = 0x00000002,
+	SERVICE_DEMAND_START = 0x00000003,
+	SERVICE_DISABLED     = 0x00000004,	
+}
 
--- messages
-winnt.WM_NCCREATE         = 0x0081
-winnt.WM_CREATE           = 0x0001
-winnt.WM_SETFONT          = 0x0030
-winnt.WM_CLOSE            = 0x0010
-winnt.WM_DESTROY          = 0x0002
-winnt.WM_COMMAND          = 0x0111
-winnt.WM_LBUTTONDOWN      = 0x0201
-winnt.WM_RBUTTONDOWN      = 0x0204
-winnt.WM_MOUSEWHEEL       = 0x020A
-winnt.WM_ERASEBKGND		  = 0x0014
-winnt.WM_PAINT            = 0x000F
-winnt.WM_SIZE             = 0x0005
-winnt.WM_TIMER            = 0x0113
-winnt.WM_KEYDOWN          = 0x0100
-winnt.WM_CHAR             = 0x0102
-winnt.WM_SYSKEYDOWN       = 0x0104
-winnt.WM_NOTIFY           = 0x004E
-winnt.WM_SETFOCUS         = 0x0007
 
 winnt.SW_SHOW=5
 
@@ -237,6 +280,7 @@ winnt.OPAQUE      = 2
 
 winnt.PS_SOLID = 0
 
+-- keys
 winnt.VK_RIGHT = 0x27
 winnt.VK_PGUP  = 0x21
 winnt.VK_PGDOWN= 0x22
@@ -246,7 +290,6 @@ winnt.VK_LEFT  = 0x25
 winnt.VK_UP    = 0x26
 winnt.VK_RIGHT = 0x27
 winnt.VK_DOWN  = 0x28
-
 winnt.VK_LSHIFT  =0xA0
 winnt.VK_RSHIFT  =0xA1
 winnt.VK_LCONTROL=0xA2
