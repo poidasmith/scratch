@@ -339,4 +339,4 @@ local function main(hInstance, hPrevInstance, lpCmdLine, nCmdShow)
 	return msg.wParam	
 end
 
-return main
+return main()

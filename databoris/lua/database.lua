@@ -2,8 +2,8 @@
 -- in-memory MRU cache of git objects
 -- server framework for git operations (bespoke git server)
 
-local ffi = require("ffi")
-local git = ffi.load("git2")
+local ffi = require "ffi"
+local git = ffi.load "git2"
 
 ffi.cdef[[
 typedef struct git_repository git_repository;
