@@ -27,6 +27,7 @@ typedef long           SC_HANDLE;
 typedef void*          LPVOID;
 typedef unsigned long  DWORD;
 typedef unsigned long* LPDWORD;
+typedef char*          LPSTR;
 typedef const char*    LPCSTR;
 typedef int            BOOL;
 typedef int            COLORREF;
@@ -108,11 +109,13 @@ typedef struct _FILETIME {
     DWORD dwLowDateTime;
     DWORD dwHighDateTime;
 } FILETIME;
+
 typedef struct tagNMHDR {
   HWND     hwndFrom;
   UINT_PTR idFrom;
   UINT     code;
 } NMHDR;
+
 typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
   DWORD    dwFileAttributes;
   FILETIME ftCreationTime;
@@ -148,6 +151,19 @@ typedef struct tagSCNotification {
 	int updated;
 } SCNotification;
 
+typedef struct _WIN32_FIND_DATA {
+  DWORD    dwFileAttributes;
+  FILETIME ftCreationTime;
+  FILETIME ftLastAccessTime;
+  FILETIME ftLastWriteTime;
+  DWORD    nFileSizeHigh;
+  DWORD    nFileSizeLow;
+  DWORD    dwReserved0;
+  DWORD    dwReserved1;
+  LPSTR    cFileName[260];
+  LPSTR    cAlternateFileName[14];
+} WIN32_FIND_DATA;
+
 BOOL     AppendMenuA(HMENU hMenu, DWORD uFlags, DWORD uIDNewItem, LPCSTR lpNewItem);
 HDC      BeginPaint(HMENU hWnd, PAINTSTRUCT *lpPaint);
 LRESULT  CallWindowProcA(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
@@ -170,9 +186,11 @@ int      DrawTextA(HDC hdc, LPCSTR lpchText, int cchText, RECT* lprc, UINT forma
 BOOL     EndPaint(HWND hWnd, const PAINTSTRUCT *lpPaint);
 UINT     ExtractIconExA(LPCSTR lpszFile,int nIconIndex,HICON *phiconLarge,HICON *phiconSmall,UINT nIcons);
 int      FillRect(HDC hDC, const RECT* lprc, HBRUSH hbr);
+HANDLE   FindFirstFile(LPCSTR lpFileName, WIN32_FIND_DATA* lpFindFileData);
 COLORREF GetBkColor(HDC hdc);
 int      GetBkMode(HDC hdc);
 BOOL     GetClientRect(HWND hWnd, RECT* lpRect);
+LPSTR    GetCommandLineA();
 DWORD    GetCurrentDirectoryA(DWORD nBufferLength, LPCSTR lpBuffer);
 DWORD    GetFileAttributesA(LPCSTR lpFileName);
 BOOL     GetFileAttributesExA(LPCSTR lpFileName, DWORD fInfoLevelId, WIN32_FILE_ATTRIBUTE_DATA* lpFileInformation);

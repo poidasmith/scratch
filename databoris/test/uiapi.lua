@@ -59,11 +59,12 @@ local CS_OWNDC = 0x20
 local CS_VREDRAW = 0x1
 local CS_HREDRAW = 0x2
 
-local function WindowCreate(class, handlers, title)
+local function WindowCreate(class, handlers, title, options)
+	local options     = options or {}
 	local clzName     = class
 	local clz         = ffi.new("WNDCLASSEXA")
 	clz.cbSize        = ffi.sizeof("WNDCLASSEXA")
-	clz.style         = bit.bor(CS_VREDRAW, CS_HREDRAW)
+	clz.style         = options.clz_style or bit.bor(CS_VREDRAW, CS_HREDRAW)
 	clz.lpfnWndProc   = cbDefWindowProc
 	clz.hInstance     = hInstance
 
@@ -72,7 +73,7 @@ local function WindowCreate(class, handlers, title)
 	shell32.ExtractIconExA("../src/Databoris.ico", 0, hicl, hics, 1)
 	clz.hIcon         = hics[0]
 	clz.hCursor       = user32.LoadCursorA(hInstance, winnt.IDC_ARROW)
-	clz.hbrBackground = gdi32.CreateSolidBrush(0x555555);
+	clz.hbrBackground = gdi32.CreateSolidBrush(options.background or 0x555555);
 	clz.lpszClassName = clzName
 
 	local atom    = user32.RegisterClassExA(clz)
@@ -80,10 +81,10 @@ local function WindowCreate(class, handlers, title)
 	local cb      = ffi.cast("WNDPROC", wndproc)	
 	
 	local hwnd = user32.CreateWindowExA(
-		bit.bor(winnt.WS_EX_WINDOWEDGE, 0x2000000),
+		options.ex_style or bit.bor(winnt.WS_EX_WINDOWEDGE, 0x2000000),
 		clzName,
 		title or "WINDOW",
-		winnt.WS_OVERLAPPEDWINDOW,
+		options.style or winnt.WS_OVERLAPPEDWINDOW,
 		0,0,0,0,0,0,
 		hInstance,
 		ffi.cast("LPVOID", cb))
@@ -127,6 +128,16 @@ local function MsgPump()
 	end
 
 	return msg.wParam	
+end
+--
+local function handler_series(handlers)
+	return function(hwnd, msg, wparam, lparam) 
+		local result = NOT_HANDLED
+		for i, v in ipairs(handles) do
+			result = result and v(hwnd, msg, wparam, lparam) ~= 0 
+		end
+		return result
+	end
 end
 --------------------------------------------------------------------------------
 return {
