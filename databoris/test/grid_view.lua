@@ -34,15 +34,16 @@ end
 local function draw_cell(hwnd, hdc, model)
 end
 
-local hbrBac = gdi32.CreateSolidBrush(0x00242424)
-local hbrBac = gdi32.CreateSolidBrush(0x00ff2424)
+--local hbrBac = gdi32.CreateSolidBrush(0x00242424)
+local hbrBac = gdi32.CreateSolidBrush(0x00ffaa24)
 
 
 local function test(hwnd, hdc)
 	--gdi32.SelectObject(hdc, hbrBac)
 	local rect = ffi.new("RECT[1]")
 	user32.GetClientRect(hwnd, rect)
-	rect[0].right = rect[0].right - rect_width(rect[0])/2
+	rect[0].right = rect[0].right - rect_width(rect[0])/2+400
+	rect[0].left = 100
 	user32.FillRect(hdc, rect, hbrBac)
 end
 

@@ -160,8 +160,8 @@ typedef struct _WIN32_FIND_DATA {
   DWORD    nFileSizeLow;
   DWORD    dwReserved0;
   DWORD    dwReserved1;
-  LPSTR    cFileName[260];
-  LPSTR    cAlternateFileName[14];
+  char     cFileName[260];
+  char     cAlternateFileName[14];
 } WIN32_FIND_DATA;
 
 BOOL     AppendMenuA(HMENU hMenu, DWORD uFlags, DWORD uIDNewItem, LPCSTR lpNewItem);
@@ -186,7 +186,9 @@ int      DrawTextA(HDC hdc, LPCSTR lpchText, int cchText, RECT* lprc, UINT forma
 BOOL     EndPaint(HWND hWnd, const PAINTSTRUCT *lpPaint);
 UINT     ExtractIconExA(LPCSTR lpszFile,int nIconIndex,HICON *phiconLarge,HICON *phiconSmall,UINT nIcons);
 int      FillRect(HDC hDC, const RECT* lprc, HBRUSH hbr);
-HANDLE   FindFirstFile(LPCSTR lpFileName, WIN32_FIND_DATA* lpFindFileData);
+BOOL 	 FindClose(HANDLE hFindFile);
+HANDLE   FindFirstFileA(LPCSTR lpFileName, WIN32_FIND_DATA* lpFindFileData);
+BOOL     FindNextFileA(HANDLE hFindFile, WIN32_FIND_DATA* lpFindFileData);
 COLORREF GetBkColor(HDC hdc);
 int      GetBkMode(HDC hdc);
 BOOL     GetClientRect(HWND hWnd, RECT* lpRect);

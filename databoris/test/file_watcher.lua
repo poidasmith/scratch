@@ -26,11 +26,24 @@ local function build(files)
 	end
 end
 
-local function build_dir(dir)
-	
+local function find_files(pattern)
+	local files = {}
+	local fd = ffi.new("WIN32_FIND_DATA[1]")
+	local hfind = kernel32.FindFirstFileA(pattern, fd)
+	local next = 1
+	while next ~= 0 and hfind ~= -1 do
+		local f = ffi.string(fd[0].cFileName)
+		table.insert(files, f) 
+		next = kernel32.FindNextFileA(hfind, fd)
+	end  
+	kernel32.FindClose(hfind)
+	return files
+end
+
+local function watch(pattern)
+	return build(find_files(pattern))
 end
 
 return {
-	build     = build,
-	build_dir = build_dir,
+	watch = watch
 }

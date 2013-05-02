@@ -4,7 +4,7 @@ local kernel32 = ffi.load "kernel32"
 
 local file_watcher = require "file_watcher"
 
-local checker = file_watcher.build_dir(".")
+local checker = file_watcher.watch("*.lua")
 
 live = { 
 	check = function(hwnd)
@@ -15,14 +15,13 @@ live = {
 	end,
 }
 
-local cl = ffi.string(kernel32.GetCommandLineA())
-local args = {}
-for arg in string.gmatch(cl, "%a+") do
-	table.insert(args, arg)
-end
-
-print(stringit(args))
+argv = ffi.string(kernel32.GetCommandLineA()):split(" ", true)
+print(stringit(argv))
 
 repeat 
-	local res = dofile(args[3])
+	--print(stringit(package, {}))	
+	package.loaded.grid_view = nil
+	package.loaded.grid = nil
+	print(stringit(table.keys(package.loaded)))
+	local res = dofile(argv[3])
 until res ~= 100  

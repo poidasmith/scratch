@@ -58,18 +58,25 @@ function hexdump(buf)
     end
 end
 
-function stringit(t) 
+function stringit(t, seen) 
 	local res = ""
 	if type(t) == "table" then
 		local first = true
 		res = "{"
+		if seen then
+			if seen[t] then
+				return "{...}"
+			else
+				seen[t] = true
+			end				
+		end
 		for i, v in pairs(t) do
 			local sep = ", "
 			if first then
 				sep = " "
 				first = false
 			end
-			res = res .. sep .. stringit(i) .. "=" .. stringit(v) 
+			res = res .. sep .. stringit(i, seen) .. "=" .. stringit(v, seen) 
 		end
 		res = res .. " }"
 	elseif type(t) == "string" then
@@ -95,6 +102,34 @@ end
 function errorf(...)
 	println(string.format(...))
 	return error(string.format(...))
+end
+
+function string.split(str, separator, quotes)
+	local len = str:len()
+	local idx = 1
+	local inq = false
+	local arr = {}
+	for i = 1, len do
+		local c = str:sub(i, i) 
+		if not inq and c == separator then
+			table.insert(arr, str:sub(idx, i-1))
+			idx = i+1
+		elseif quotes and c == "\"" then 
+			inq = not inq 
+		end
+	end
+    if idx < len then
+		arr[#arr+1] = str:sub(idx, len)
+    end
+	return arr
+end
+
+function table.keys(t)
+	local keys = {}
+	for k,v in pairs(t) do
+		table.insert(keys, k)
+	end
+	return keys
 end
 
 function table.strict(t)
