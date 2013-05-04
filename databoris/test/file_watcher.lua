@@ -45,5 +45,7 @@ local function watch(pattern)
 end
 
 return {
-	watch = watch
+	build = build,
+	watch = watch,
+	find_files = find_files
 }

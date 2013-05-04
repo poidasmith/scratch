@@ -1,6 +1,7 @@
 
 local ffi = require("ffi")
 
+if not defined_winnt then
 ffi.cdef[[
 typedef unsigned short WORD;
 typedef long           LONG;
@@ -38,13 +39,17 @@ typedef WORD           ATOM;
 
 typedef DWORD (__stdcall* WNDPROC)(HANDLE, DWORD, DWORD, DWORD);
 
-typedef struct tagRECT
-{
+typedef struct tagRECT {
     long    left;
     long    top;
     long    right;
     long    bottom;
 } RECT;
+
+typedef struct tagSIZE { 
+  LONG cx; 
+  LONG cy; 
+} SIZE; 
 
 typedef struct tagPAINTSTRUCT {
     HANDLE      hdc;
@@ -201,6 +206,7 @@ BOOL     GetMessageA(MSG* lpMsg, HWND hWnd, UINT wMsgFilterMin, UINT wMsgFilterM
 DWORD    GetModuleFileNameA(HMODULE hModule, LPCSTR lpFilename, DWORD nSize);
 HMODULE  GetModuleHandleA(LPCSTR lpModuleName);
 HGDIOBJ  GetStockObject(int i);
+BOOL     GetTextExtentPointA(HDC hdc, LPCSTR lpString, int cbString, SIZE* lpSize);
 HDC      GetWindowDC(HWND hWnd);
 BOOL     InitCommonControlsEx(const INITCOMMONCONTROLSEX *picce);
 BOOL     InvalidateRect(HWND hWnd, const RECT *lpRect, BOOL bErase);
@@ -225,15 +231,18 @@ int      SetBkMode(HDC hdc, int mode);
 BOOL     SetForegroundWindow(HWND hWnd);
 BOOL     SetMenu(HWND hWnd, HMENU hMenu);
 HWND     SetFocus(HWND hWnd);
+UINT     SetTextAlign(HDC hdc, UINT fMode);
 COLORREF SetTextColor(HDC hdc, COLORREF color);
 UINT_PTR SetTimer(HWND hWnd, UINT_PTR nIDEvent, UINT uElapse, UINT_PTR lpTimerFunc);
 LONG_PTR SetWindowLongA(HWND hWnd, int nIndex, LONG_PTR dwNewLong);
 BOOL     ShowWindow(HWND hWnd, int nCmdShow);
+void     Sleep(DWORD dwMilliseconds);
 BOOL     TextOutA(HDC hdc, int x, int y, LPCSTR lpString, int c);
 BOOL     TranslateMessage(const MSG *lpMsg);
 BOOL     UpdateWindow(HWND hWnd);
-
 ]]
+defined_winnt = true
+end
 
 local winnt = {
 	-- styles
@@ -272,6 +281,10 @@ local winnt = {
 	SERVICE_AUTO_START   = 0x00000002,
 	SERVICE_DEMAND_START = 0x00000003,
 	SERVICE_DISABLED     = 0x00000004,	
+	
+	-- text align
+	TA_BOTTOM   = 8,
+	TA_BASELINE = 24,
 }
 
 

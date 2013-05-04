@@ -176,5 +176,7 @@ debugger
 - table is stream of table mutation events
 
 
+=== IDE Features
 
+- quick search file facility eg, for lookup of win32 symbols, function defs, defines 
  

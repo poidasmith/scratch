@@ -104,6 +104,14 @@ function errorf(...)
 	return error(string.format(...))
 end
 
+function mapcar(a, f)
+	res = {}
+	for i,v in ipairs(a) do
+		table.insert(res, f(v, i))
+	end
+	return res
+end
+
 function string.split(str, separator, quotes)
 	local len = str:len()
 	local idx = 1
@@ -122,6 +130,19 @@ function string.split(str, separator, quotes)
 		arr[#arr+1] = str:sub(idx, len)
     end
 	return arr
+end
+
+function table.union(...)
+	local res = {}
+	local args = {...}
+	for i,t in ipairs(args) do
+		for k,v in pairs(t) do
+			if not res[k] then
+				res[k] = v
+			end
+		end
+	end
+	return res
 end
 
 function table.keys(t)
