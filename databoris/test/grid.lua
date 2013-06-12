@@ -6,12 +6,14 @@ local grm = require "grid_model"
 local grc = require "grid_controller" 
 local file_watcher = require "file_watcher"
 
+local model = grm.build()
+
 local ps = ffi.new("PAINTSTRUCT")
 local function wm_paint(hwnd, msg, wparam, lparam)
 	local hdc = user32.BeginPaint(hwnd, ps)
 
 	-- invoke our view	
-	grv.draw_things(hwnd, hdc)
+	grv.draw_things(hwnd, hdc, model)
 	
 	user32.EndPaint(hwnd, ps)
 end

@@ -1,8 +1,9 @@
 
 - windows service; host main repository
 
-
-
+for efficient storage of grid rows look at 
+http://en.wikipedia.org/wiki/Interval_tree
+http://en.wikipedia.org/wiki/Segment_tree
 
 
 == launcher kernel
@@ -180,3 +181,9 @@ debugger
 
 - quick search file facility eg, for lookup of win32 symbols, function defs, defines 
  
+ 
+=== Existing libraries
+
+http://scilua.org/index.html
+http://luarocks.org/repositories/rocks/
+https://github.com/kr/beanstalkd/wiki/faq

@@ -145,6 +145,12 @@ function table.union(...)
 	return res
 end
 
+-- cascaded/union view on a series of tables
+function table.cascade(...)
+	local args = {...}
+	
+end
+
 function table.keys(t)
 	local keys = {}
 	for k,v in pairs(t) do
