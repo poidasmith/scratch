@@ -1,0 +1,22 @@
+.Footer {
+    padding: 0px;
+    color: white;
+    background-color: #007ACC;
+    display: flex;
+}
+
+.FooterLeft {
+    flex: 1;
+}
+
+.FooterRight {
+    xflex-direction: right;
+}
+
+.SpacerLeft {
+    padding-left: 5px;
+}
+
+.SpacerRight {
+    padding-right: 5px;
+}

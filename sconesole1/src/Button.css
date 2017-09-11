@@ -1,0 +1,28 @@
+.Button {
+    padding: 2px;
+    padding-top: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    background-color: inherit;
+    border: 0;
+}
+
+.Button:hover {
+    background-color: #1F8AD2
+}
+
+.Button:active {
+    background-color: #1F8AD2;
+    padding: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border: 0;
+}
+
+.Button:focus {
+    outline: 0;
+}
+
+.FontSmaller {
+    font-size: smaller;
+}

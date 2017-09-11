@@ -1,0 +1,26 @@
+.App {
+  background-color: #222;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.AppHeader {
+  padding: 5px;
+  background-color: black;
+}
+
+.AppBody {
+  flex: 1;
+  padding: 5px;
+  background-color: #101010;
+}
+
+.AppFooter {
+  background-color: black;
+  padding: 0px;
+}
+
