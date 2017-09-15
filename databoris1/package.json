@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "npm run build && node dist/src/index.js",
+    "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,7 +13,9 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.15.4",
-    "morgan": "^1.8.2"
+    "morgan": "^1.8.2",
+    "redis": "^2.8.0",
+    "redis-promise": "^0.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
