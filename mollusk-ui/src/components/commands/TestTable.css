@@ -1,0 +1,48 @@
+
+.CommandTable {
+    border: 0px;
+}
+
+.CommandTable:hover {
+    background-color: inherit;
+}
+
+.react-grid-Container,
+.react-grid-Main,
+.react-grid-Grid,
+.react-grid-Header,
+.react-grid-HeaderCell,
+.react-grid-Viewport,
+.react-grid-Canvas,
+.react-grid-Row,
+.react-grid-Cell {
+  background-color: black;
+  color: rgba(255, 255, 255, 0.77);
+  border: 0px;
+  outline: 0;
+}
+
+.react-grid-Grid {
+    border: 0px;
+}
+
+.react-grid-HeaderCell,
+.react-grid-Cell {
+    border-right: 1px solid #2E2D2D;
+    border-bottom: 1px solid #2E2D2D;
+}
+
+.react-grid-Container,
+.react-grid-Main,
+.react-grid-Grid,
+.react-grid-Canvas,
+.react-grid-Viewport {
+    background-color: inherit;
+}
+
+.react-grid-Cell:hover,
+.react-grid-Row:hover,
+.react-grid-Row--even:hover,
+{
+    background: #1E1D1D;
+}

@@ -1,0 +1,18 @@
+.Prompt {
+    font-family: monospace;
+    color: #B4B1B1;
+    background-color: black;
+    margin: 0px;
+    padding: 5px;
+    padding-left: 10px;
+    border-top: 1px solid #4F4E4E;
+}
+
+.Prompt input {
+    color: #B4B1B1;
+    background-color: #272626;
+    padding: 3px;
+    padding-left: 5px;
+    width: 100%;
+    border: 1px solid #4F4E4E;
+}

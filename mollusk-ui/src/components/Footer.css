@@ -1,0 +1,18 @@
+
+.AppFooter {
+    background-color: #070019;
+    padding: 4px;
+    padding-left: 5px;
+    padding-right: 5px;
+    color: rgba(255, 255, 255, 0.77);
+    border-top: 1px solid #2E2D2D;
+    font-size: 90%;
+}
+
+.AppFooterTitle {
+    padding-left: 5px;
+}
+
+.green {
+    color: #6A8C6A;
+}
