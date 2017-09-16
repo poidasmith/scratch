@@ -1,4 +1,4 @@
-Mollusk
+# Terminal Boris
 
 A web-based terminal/console
 
