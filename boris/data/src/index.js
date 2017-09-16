@@ -7,7 +7,7 @@ client.connect();
 
 client.on('error', err => console.log('Error ' + err));
 
-const port = process.env.PORT || 8100;
+const port = process.env.PORT || 5001;
 app.listen(port);
 
 // Describe our server?
