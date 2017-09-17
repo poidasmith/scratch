@@ -1,6 +1,6 @@
 {
-  "name": "sconesole1",
-  "proxy": "http://data.boris.org:8100",
+  "name": "config-boris",
+  "proxy": "http://data.boris.org",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

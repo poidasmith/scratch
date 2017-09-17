@@ -1,6 +1,6 @@
 {
-  "name": "mollusk-ui",
-  "proxy": "http://data.boris.org:5001",
+  "name": "term-boris",
+  "proxy": "http://data.boris.org",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
