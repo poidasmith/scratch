@@ -1,0 +1,14 @@
+{
+    "name": "infra-boris",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+    },
+    "scripts": {
+        "ng": "cd nginx && nginx -c ng.conf",
+        "ng-stop": "cd nginx && nginx -s stop -c ng.conf",
+        "ng-reload": "cd nginx && nginx -s reload -c ng.conf",
+        "redis": "cd redis && redis-server redis.conf"
+    }
+  }
+  
