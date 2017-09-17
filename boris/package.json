@@ -1,0 +1,13 @@
+{
+  "name": "boris",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+  },
+  "scripts": {
+    "term": "cd term && npm start",
+    "data": "cd data && npm start",
+    "config": "cd config && npm start",
+    "ng": "cd nginx && nginx -c ng.conf"
+  }
+}
