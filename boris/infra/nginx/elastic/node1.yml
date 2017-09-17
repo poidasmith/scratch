@@ -1,0 +1,11 @@
+cluster.name: boris
+node.name: boris1
+path.data: data1
+path.logs: logs1
+
+network.host: data.boris.org
+http.port: 9201
+#discovery.zen.ping.unicast.hosts: ["host1", "host2"]
+#discovery.zen.minimum_master_nodes: 3
+#gateway.recover_after_nodes: 3
+#action.destructive_requires_name: true
