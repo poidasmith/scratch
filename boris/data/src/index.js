@@ -2,6 +2,7 @@ import express from 'express';
 import Redis from 'redis-promise';
 
 const app = express();
+
 const client = new Redis();
 client.connect();
 
@@ -13,6 +14,7 @@ app.listen(port);
 // Describe our server?
 app.get('/', (req, res) => {
 
+    res.json({});
 });
 
 // Grab the config file
