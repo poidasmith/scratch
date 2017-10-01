@@ -30,7 +30,9 @@ var layout = {
 
         },
         layout: {
+            views: [
 
+            ]
         }
     },
 
@@ -109,3 +111,5 @@ var layout = {
     },
 
 };
+
+export default layout;
